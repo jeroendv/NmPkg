@@ -17,6 +17,11 @@ conan_imports_manifest.txt
 
 -->
 
+  <Target Name="UpdateConanTargets" BeforeTargets="ConanInstallation">
+    <Message Text="Updating 'Conan.Targets'" Importance="high" />
+    <Exec Command="ConanVsIntegration-integrate -d" />
+  </Target>
+
   <Target Name="ConanInstallation" BeforeTargets="PrepareForBuild"
     Condition="Exists('conanfile.txt') And !Exists('Conan.InstallOk')" >
     
