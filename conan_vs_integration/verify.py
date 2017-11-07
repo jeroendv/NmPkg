@@ -1,11 +1,6 @@
-import sys
-import argparse
-import os
-from pathlib import Path
-import shutil
-import hashlib
-import binascii
+
 from conan_vs_integration import *
+import argparse
 
 """veriry a conan integration with an MSBuild project
 """
