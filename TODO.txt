@@ -1,0 +1,25 @@
+* write documentations and use-cases
+* unit test the use cases
+
+* integrate should:
+  + add Conan.Targets
+  + add conanfile.txt
+
+* explicitly set generator during 'install'
+
+* only terminate build if install changed or added a property file
+
+* add imports targets preferably one that used symlinks from the packages themselves to avoid copying
+  I.e. there is also no [imports] section in the conanfile.txt because that will copy the files
+  alternatively make sure that the copy is timestamp aware to avoid copying file that are already there
+
+* add version number to Conan.Targets
+
+* add a 'verify' command 
+  + check program invars
+  + verify version and checksum of Conan.Targets
+
+* add a pip install conan_vs_integration -u target to conan.Targets
+
+* add conan to deps of this package
+

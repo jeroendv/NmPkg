@@ -9,7 +9,9 @@ setup(name='conan_vs_integration',
       license='',
       packages=['conan_vs_integration'],
       entry_points = {
-        'console_scripts': ['conanVsIntegration-integrate=conan_vs_integration.integrate:main'],
+        'console_scripts': [
+            'conanVsIntegration-integrate=conan_vs_integration.integrate:main',
+            'conanVsIntegration-install=conan_vs_integration.install:main'],
         },
       include_package_data=True,
       zip_safe=False)

@@ -3,6 +3,11 @@ import argparse
 import os
 from pathlib import Path
 import shutil
+import hashlib
+import binascii
+
+"""integrate conan into MSBuild for a given project
+"""
 
 
 def parse_cli_args():
@@ -35,9 +40,46 @@ def parse_cli_args():
 
 def main():
     parse_cli_args()
-    print(args.verbose)
     packageDir = Path(__file__).parent
-    shutil.copyfile(packageDir / "Conan.targets", Path(os.getcwd()) / "Conan.targets" )
+    refFile = packageDir / "Conan.targets"
+    userFile = Path(os.getcwd()) / "Conan.targets"
+
+    if (userFile.exists()):
+        updateIfChanged(refFile, userFile)
+    else:
+        if args.debug:
+            print("file missing => installing file")
+        shutil.copyfile(refFile, userFile)
+        sys.stderr.write("error: Conan.Targets' was integrated. restart build is required!")
+        sys.exit(1)
+
+
+def updateIfChanged(src, dst):
+    srcDigest = filehash(src)
+    dstDigest = filehash(dst)
+    
+    if srcDigest != dstDigest:
+        if args.debug:
+            print("hash mismatch! => updating file")
+            print("srcFile: " + binascii.hexlify(srcDigest).decode('ascii'))
+            print("dstFile: " + binascii.hexlify(dstDigest).decode('ascii'))
+        
+       
+        shutil.copyfile(src, dst)
+        sys.stderr.write("error: Conan.Targets' was updated. restart build is required!")
+        sys.exit(1)
+    else:
+         if args.debug:
+            print("hash match! => file is up to date")
+
+def filehash(file):
+    h = hashlib.sha256()
+    with open(file, 'rb') as f:
+        h.update(f.read())
+        return h.digest()
+    
+
+
 
 
 
