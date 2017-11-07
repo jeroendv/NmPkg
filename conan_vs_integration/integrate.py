@@ -25,9 +25,6 @@ def parse_cli_args():
                         help="Do not perform any actions, only simulate them.")
 
     args = parser.parse_args()
-    if(args.debug):
-        print("cli arguments: " + str(args)) 
-
 
     # don't show error trace in non-debug mode
     if(args.debug is False):
@@ -35,6 +32,9 @@ def parse_cli_args():
     
     if args.debug:
         DebugLog.enabled = True
+    
+    with DebugLogScopedPush("cli arguments:"):
+        DebugLog.print(str(args))
     
     return args
 
