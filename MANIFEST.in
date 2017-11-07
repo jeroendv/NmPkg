@@ -1,1 +1,2 @@
 include conan_vs_integration/Conan.targets
+include conan_vs_integration/ConanVsIntegration.Debug.targets
