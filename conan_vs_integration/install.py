@@ -1,6 +1,5 @@
-import sys
+from conan_vs_integration import *
 import argparse
-import os
 import subprocess
 
 
@@ -10,14 +9,13 @@ import subprocess
 
 def parse_cli_args():
     """parse the script input arguments"""
-    global args
-    parser = argparse.ArgumentParser(description = "install conan dependencies for a given project")
+    parser = argparse.ArgumentParser(description="install conan dependencies for a given project")
 
     parser.add_argument("-v", "--verbose",
                     help="increase output verbosity",
                     action="store_true")
 
-    parser.add_argument("-d","--debug",
+    parser.add_argument("-d", "--debug",
                     help="enable debug output",
                     action="store_true")
                    
@@ -30,24 +28,27 @@ def parse_cli_args():
     parser.add_argument("--Configuration")
     parser.add_argument("--VisualStudioVersion")
 
-    # parser.add_argument("command",
-    #                     help="which command to invoke"
-    #                     nargs="?")
     args = parser.parse_args()
-    if(args.debug):
-        print("cli arguments: " + str(args)) 
 
-    # don't show error trace in non-debug mode
-    if(args.debug is False):
+    if args.debug:
+        DebugLog.enabled = True
+
+    with DebugLogScopedPush("cli arguments:"):
+        DebugLog.print(str(args))
+
+    #don't show error trace in non-debug mode
+    if (not args.debug):
         sys.excepthook = exception_handler
+    
+    return args
 
 def main():
-    parse_cli_args()
+    args = parse_cli_args()
 
     cmd = ['conan', 'install', './']
-    cmd += ['-s', processPlatform()]
-    cmd += ['-s', processConfiguration()]
-    cmd += ['-s', processVisualStudioVersion()]
+    cmd += ['-s', processPlatform(args)]
+    cmd += ['-s', processConfiguration(args)]
+    cmd += ['-s', processVisualStudioVersion(args)]
     
     if (args.debug):
         print(" ".join(cmd))
@@ -55,15 +56,15 @@ def main():
     subprocess.check_call(cmd)
 
 
-def processPlatform():
-    if (args.Platform is "Win32"):
+def processPlatform(args):
+    if (args.Platform == "Win32"):
         return "arch=x86"
     elif(args.Platform == "x64"):
         return "arch=x86_64"
     else:
         raise Exception("unknown platform '%s', it can not be mapped to a conan.arch setting" % args.Platform)
 
-def processVisualStudioVersion():
+def processVisualStudioVersion(args):
     if(args.VisualStudioVersion == "11.0"):
         return "compiler.version=11"
     
@@ -71,7 +72,7 @@ def processVisualStudioVersion():
     
 
 
-def processConfiguration():
+def processConfiguration(args):
     return "build_type=" + args.Configuration
 
 
