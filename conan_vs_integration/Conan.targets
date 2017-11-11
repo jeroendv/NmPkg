@@ -1,21 +1,4 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-<!--
-TODO:
-
-make a conanInstallation task 
- + runs everytime!
- + installs packages based on configuration, platform and toolset 
-   instead of a hardcoded profile name
- + terminates build if and only iff the props files changed!
-   (removing need for the Conan.InstallOK file!!)
-
-publish both tasks as a conan tool?
-
-make a conan imports task based on the existance and content of 
-conan_imports_manifest.txt
-
-
--->
 
   <Target Name="VerifyConanTarget" BeforeTargets="ConanInstallation">
     <Message Text="Updating 'Conan.Targets'" Importance="high" />
