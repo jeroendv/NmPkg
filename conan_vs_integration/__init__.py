@@ -62,15 +62,36 @@ class DebugLog:
 
 
 class VsProject:
-    """A Visual Studio project with a given name"""
+    """A Visual Studio project consists of a folder and a single *.vcxproj file
+    """
     def __init__(self, path):
         self._set_path(path)
 
     def _set_path(self, path):
-        self.path = os.path.abspath(path)
+        self.path = Path(path)
 
-        if (not os.path.isdir(self.path)):
-            raise Exception("'%s' is not an existing directory" % path)
+        if (not self.path.is_dir()):
+            raise Exception("'%s' is not an existing directory" % path.absolute)
+        
+        projects = [x for x in self.path.iterdir() if x.is_file() and x.suffix == '.vcxproj']
+        if (len(projects) == 0):
+            raise Exception("'%s' is not an a project folde, no '*.vcxproj' file is present" % path.absolute)
+        elif (len(projects) > 1):
+            raise Exception("'%s' contains multiple '*.vcxproj' project files" % path.absolute)
+        else:
+            assert(len(projects) == 1)
+            self.projectFile = projects[0]
+        
+            
+            
+
+    def path(self):
+        """return pathlib.Path for the project folder"""
+        return self.Path
+
+    def projectFile(self):
+        """return pathlib.Path for the project file"""        
+        return self.projectFile
 
 
 
@@ -85,7 +106,7 @@ class VerifyIntegration:
         """verify an integration
         returns a failure message or None if all is ok
         """
-        assert(os.getcwd() == self.vsProject.path)
+        assert(self.vsProject.path.samefile(os.getcwd()))
 
         packageDir = Path(__file__).parent
 
@@ -129,14 +150,14 @@ class VerifyIntegration:
 
 
 def UpdateIntegration(vsProject):
-    assert(os.getcwd() == vsProject.path)
+    assert(vsProject.path.samefile(os.getcwd()))
 
     packageDir = Path(__file__).parent
     refFile = packageDir / "Conan.targets"
-    shutil.copy(refFile, os.getcwd())
+    shutil.copy(refFile, vsProject.path)
 
     refFile = packageDir / "ConanVsIntegration.Debug.targets"
-    shutil.copy(refFile, os.getcwd())
+    shutil.copy(refFile, vsProject.path)
 
 def filehash(file):
     """compute file checksum"""
