@@ -1,6 +1,14 @@
 * write documentations and use-cases
 * unit test the use cases
 
+* instead of passing the configuration to the 'install command' it would be robuster to pass
+    + the debug vs. release settings
+    + the unicode vs. non-unicode settings
+  this way there is no ambiguity due to the arbitrarily choosen configuration name.
+
+* add toolset condition instead of VS version condition to the buildProperties.
+  see also : https://github.com/conan-io/conan/issues/966
+
 * integrate should:
   + add Conan.Targets
   + add conanfile.txt
