@@ -53,7 +53,7 @@ class DebugLog:
         if (not DebugLog.enabled):
             return 
 
-        print("   "*DebugLog.indentLvl + msg)
+        print("|  "*DebugLog.indentLvl + msg)
 
     def push():
         DebugLog.indentLvl += 1
