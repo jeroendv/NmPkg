@@ -42,6 +42,7 @@ class DebugLogScopedPush:
         DebugLog.pop()
         assert(DebugLog.indentLvl == self.originalIndentLvl)
 
+
 class DebugLog:
     """An indentation aware debug log stream"""
 
@@ -69,7 +70,6 @@ class DebugLog:
             newIndentLvl = 0
         
         DebugLog.indentLvl = newIndentLvl
-
         return DebugLog.indentLvl
 
 
