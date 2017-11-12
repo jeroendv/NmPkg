@@ -11,7 +11,7 @@ class MsBuild:
     
     def Error(msg):
         """print an MSBuild error message to stderr"""
-        sys.stderr.write("Error: " + msg)
+        sys.stderr.write("Error: " + msg + "\n")
 
 
 
