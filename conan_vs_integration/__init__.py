@@ -1,5 +1,6 @@
 
-import os,sys
+import os
+import sys
 from pathlib import Path
 import hashlib
 import binascii
@@ -72,7 +73,8 @@ class VsProject:
 
         if (not self.path.is_dir()):
             raise Exception("'%s' is not an existing directory" % path.absolute)
-        
+
+        # verify that the folder contains only one project
         projects = [x for x in self.path.iterdir() if x.is_file() and x.suffix == '.vcxproj']
         if (len(projects) == 0):
             raise Exception("'%s' is not an a project folde, no '*.vcxproj' file is present" % path.absolute)
@@ -81,6 +83,11 @@ class VsProject:
         else:
             assert(len(projects) == 1)
             self.projectFile = projects[0]
+        
+        # verify that a 'conanfile.txt' is present
+        conanFile = self.path / Path("conanfile.txt")
+        if ( not conanFile.exists()):
+            raise Exception(str(conanFile.absolute()) + " is missing!")
         
             
             
