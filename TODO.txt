@@ -5,10 +5,6 @@
   + add Conan.Targets
   + add conanfile.txt
 
-* explicitly set generator during 'install'
-
-* only terminate build if install changed or added a property file
-
 * add imports based on 'conan_imports_manifest.txt'
   <Target Name="ConanImports" AfterTargets="Build">
     <Message Text="Copy conan imported files to the build output directory" Importance="high" />
@@ -22,7 +18,7 @@
 
 * add a 'verify' command 
   + check program invars
-  + verify version and checksum of Conan.Targets
+  + verify version
 
 * add a 'pip install conan_vs_integration -u' target to conan.Targets
 
