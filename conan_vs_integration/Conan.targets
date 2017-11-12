@@ -1,4 +1,6 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <Import Project="conanbuildinfo_multi.props" Condition="exists('conanbuildinfo_multi.props')" />
 
   <Target Name="VerifyConanTarget" BeforeTargets="ConanInstallation">
     <Message Text="Updating 'Conan.Targets'" Importance="high" />
