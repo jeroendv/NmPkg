@@ -10,6 +10,9 @@
 * only terminate build if install changed or added a property file
 
 * add imports based on 'conan_imports_manifest.txt'
+  <Target Name="ConanImports" AfterTargets="Build">
+    <Message Text="Copy conan imported files to the build output directory" Importance="high" />
+  </Target>
 
 * add imports targets preferably one that used symlinks from the packages themselves to avoid copying
   I.e. there is also no [imports] section in the conanfile.txt because that will copy the files
