@@ -5,6 +5,7 @@ from pathlib import Path
 import hashlib
 import binascii
 import shutil
+import traceback
 
 
 class MsBuild:
@@ -13,6 +14,17 @@ class MsBuild:
         """print an MSBuild error message to stderr"""
         sys.stderr.write("Error: " + msg + "\n")
 
+class MsBuildExceptionHandle:
+    """Exception handler for processing by MsBuild"""
+
+    def __init__(self, debug):
+        self.debug = debug
+
+    def exception_handler(self, exception_type, exception, tb):
+        # format python exception as MsBuild error messages
+        MsBuild.Error(str(exception_type.__name__) + " : " + str(exception))
+        if (self.debug):
+            traceback.print_tb(tb)
 
 
 class DebugLogScopedPush:

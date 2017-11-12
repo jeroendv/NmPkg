@@ -39,9 +39,9 @@ def parse_cli_args():
     with DebugLogScopedPush(Path(__file__).name + " cli arguments:"):
         DebugLog.print(str(args))
 
-    #don't show error trace in non-debug mode
-    if (not args.debug):
-        sys.excepthook = exception_handler
+    # register custom exception handler
+    h = MsBuildExceptionHandle(args.debug)
+    sys.excepthook = h.exception_handler
     
     return args
 
@@ -149,13 +149,5 @@ def processVisualStudioVersion(args):
 
 def processConfiguration(args):
     return "build_type=" + args.Configuration
-
-
-
-
-def exception_handler(exception_type, exception, traceback):
-    # All your trace are belong to us!
-    # your format
-    print(str(exception_type.__name__) + " : " + str(exception))
 
 

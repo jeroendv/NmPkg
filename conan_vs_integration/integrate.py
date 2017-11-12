@@ -26,9 +26,9 @@ def parse_cli_args():
 
     args = parser.parse_args()
 
-    # don't show error trace in non-debug mode
-    if(args.debug is False):
-        sys.excepthook = exception_handler
+    # register custom exception handler
+    h = MsBuildExceptionHandle(args.debug)
+    sys.excepthook = h.exception_handler
     
     if args.debug:
         DebugLog.enabled = True
@@ -58,12 +58,6 @@ def main():
                 # force restart to pick up on new '*.targets' files
                 MsBuild.Error("conan integration was updated. restart build is required!")
                 sys.exit(1)
-    
-
-def exception_handler(exception_type, exception, traceback):
-    # All your trace are belong to us!
-    # your format
-    print(str(exception_type.__name__) + " : " + str(exception))
 
 
 
