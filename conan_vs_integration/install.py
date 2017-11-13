@@ -107,6 +107,7 @@ def main():
     cmd += ['-s', processPlatform(args)]
     cmd += ['-s', processConfiguration(args)]
     cmd += ['-s', processVisualStudioVersion(args)]
+    cmd += ['-s', processToolset(args)]
     cmd += ['--generator', 'visual_studio_toolset_multi']
     cmd += ['--update']
     
@@ -162,5 +163,8 @@ def processVisualStudioVersion(args):
 
 def processConfiguration(args):
     return "build_type=" + args.Configuration
+
+def processToolset(args):
+    return "compiler.toolset="+args.Toolset
 
 
