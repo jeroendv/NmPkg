@@ -24,9 +24,6 @@
 
 * add version number to Conan.Targets
 
-* add a 'verify' command 
-  + check program invars
-  + verify version
 
 * add a 'pip install conan_vs_integration -u' target to conan.Targets
 
