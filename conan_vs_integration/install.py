@@ -116,7 +116,7 @@ def main():
     errors = conanInstallChecksum.verify()
     if (errors is not None):
         # the checksums failed, conan installed something  or a pacakge changed, or ...
-        MsBuild.Error("conan installed or updated missing packages. restart build is required!\n")
+        MsBuild.Error("conan installed or updated missing packages. restart build is required!")
         for e in errors:
             sys.stderr.write("\t" + e)
        
