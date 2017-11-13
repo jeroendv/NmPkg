@@ -15,7 +15,7 @@ Modifying this file will result in a build failure!
 
   on a clean check-out of the sourcecode this file wil not yet exists hence the need to load it conditionally.
   -->
-  <Import Project="conanbuildinfo_multi.props" Condition="exists('conanbuildinfo_multi.props')" />
+  <Import Project="conanbuildinfo_multipleToolsets.props" Condition="exists('conanbuildinfo_multipleToolsets.props')" />
 
   <!-- Verify that conan integration was not corrupted
   Build fails if it is.
