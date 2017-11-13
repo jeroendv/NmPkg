@@ -107,7 +107,7 @@ def main():
     cmd += ['-s', processPlatform(args)]
     cmd += ['-s', processConfiguration(args)]
     cmd += ['-s', processVisualStudioVersion(args)]
-    cmd += ['--generator', 'visual_studio_multi']
+    cmd += ['--generator', 'visual_studio_toolset_multi']
     cmd += ['--update']
     
     DebugLog.print("conan cli command: " + " ".join(cmd))
