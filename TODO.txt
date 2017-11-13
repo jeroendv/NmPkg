@@ -24,8 +24,16 @@
 
 * add version number to Conan.Targets
 
-
-* add a 'pip install conan_vs_integration -u' target to conan.Targets
+* detect if conan_vs_integration tool is missing or outdated?
+  optionally automatically install/update it?
+  add a 'pip install conan_vs_integration -u' target to conan.Targets?
 
 * add conan to deps of this package
+
+* verify that the 'visual_studio_toolset_multi' generator is used!
+
+* verify that the conanfile.txt is part of the project
+
+* how to run the tool for all projects prior to invoking msbuild in cc.net
+  problem: which settings are used by the solutions?
 
