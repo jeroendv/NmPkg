@@ -110,6 +110,7 @@ def main():
     cmd += ['-s', processToolset(args)]
     cmd += ['--generator', 'visual_studio_toolset_multi']
     cmd += ['--update']
+    cmd += ['--build=missing']
     
     DebugLog.print("conan cli command: " + " ".join(cmd))
     subprocess.check_call(cmd)
