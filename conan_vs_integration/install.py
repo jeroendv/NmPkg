@@ -140,10 +140,23 @@ def processPlatform(args):
         raise Exception("unknown platform '%s', it can not be mapped to a conan.arch setting" % args.Platform)
 
 def processVisualStudioVersion(args):
-    if(args.VisualStudioVersion == "11.0"):
-        return "compiler.version=11"
+
+    # http://marcofoco.com/microsoft-visual-c-version-map/
+    # map a VisualStudio version to a conan settings.compiler.version
+    versionMap ={
+        "10.0": "10", # Visual Studio 2010
+        "11.0": "11", # Visual Studio 2012
+        "12.0": "12", # Visual Studio 2013
+        "14.0": "14", # Visual Studio 2015
+        "15.0": "15"  # Visual Studio 2017
+    }
+
+    if (args.VisualStudioVersion not in versionMap):
+        raise Exception("unknown VisualStudioVersion '%s', it can not be mapped to a conan.compiler.version setting" % args.VisualStudioVersion)
+
+
+    return "compiler.version=%s" % versionMap[args.VisualStudioVersion]
     
-    raise Exception("unknown VisualStudioVersion '%s', it can not be mapped to a conan.compiler.version setting" % args.VisualStudioVersion)
     
 
 
