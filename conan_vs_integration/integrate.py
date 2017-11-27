@@ -20,6 +20,10 @@ def parse_cli_args():
     parser.add_argument("-d", "--debug",
                     help="enable debug output",
                     action="store_true")
+    parser.add_argument("path",
+                    help="path to the folder containing a *.vcxproj file",
+                    nargs='?',
+                    default="./")
 
     parser.add_argument("-N", "--dry-run",
                         help="Do not perform any actions, only simulate them.")
@@ -42,22 +46,27 @@ def main():
 
     args = parse_cli_args()
 
-    vsProject = VsProject(os.getcwd())
 
     if (args.update):
         with DebugLog.scopedPush("integration update"):
-            msg = VerifyIntegration(vsProject).verify()
+            vsConanProject = VsConanProject(args.path)
+            msg = VerifyIntegration(vsConanProject).verify()
             if (msg is None):
                 DebugLog.print("everything verified ok, so exit with success-code")
                 sys.exit(0)
             else:
                 DebugLog.print("verification failed! => force reintegration")
                 
-                UpdateIntegration(vsProject)
+                UpdateIntegration(vsConanProject)
 
                 # force restart to pick up on new '*.targets' files
                 MsBuild.Error("conan integration was updated. restart build is required!")
                 sys.exit(1)
+    else:
+        assert(args.update is False)
+        with DebugLog.scopedPush("Integrate conanwith MsBuild *.vcxproj file"):
+            vsProject = VsProject(args.path)
+            Integrate(vsProject)
 
 
 

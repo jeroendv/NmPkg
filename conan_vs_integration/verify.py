@@ -39,9 +39,9 @@ def parse_cli_args():
 def main():
     args = parse_cli_args()
 
-    vsProject = VsProject(os.getcwd())
+    vsConanProject = VsConanProject(os.getcwd())
     
-    msg = VerifyIntegration(vsProject).verify()
+    msg = VerifyIntegration(vsConanProject).verify()
     if(msg is not None):
         MsBuild.Error(msg)
         sys.exit(1)

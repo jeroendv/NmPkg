@@ -8,6 +8,9 @@ import shutil
 import traceback
 
 
+import xml.etree.ElementTree as ET
+
+
 class MsBuild:
     
     def Error(msg):
@@ -78,54 +81,71 @@ class VsProject:
     """A Visual Studio project consists of a folder and a single *.vcxproj file
     """
     def __init__(self, path):
-        self._set_path(path)
+        self._path = Path(path)
+        self._verify_path()
 
-    def _set_path(self, path):
-        self.path = Path(path)
-
-        if (not self.path.is_dir()):
-            raise Exception("'%s' is not an existing directory" % path.absolute)
+    def _verify_path(self):
+        if (not self._path.is_dir()):
+            raise Exception("'%s' is not an existing directory" % self._path.absolute())
 
         # verify that the folder contains only one project
-        projects = [x for x in self.path.iterdir() if x.is_file() and x.suffix == '.vcxproj']
+        projects = [x for x in self._path.iterdir() if x.is_file() and x.suffix == '.vcxproj']
         if (len(projects) == 0):
-            raise Exception("'%s' is not an a project folde, no '*.vcxproj' file is present" % path.absolute)
+            raise Exception("'%s' is not an a project folde, no '*.vcxproj' file is present" % self._path.absolute())
         elif (len(projects) > 1):
-            raise Exception("'%s' contains multiple '*.vcxproj' project files" % path.absolute)
+            raise Exception("'%s' contains multiple '*.vcxproj' project files" % self._path.absolute())
         else:
             assert(len(projects) == 1)
-            self.projectFile = projects[0]
-        
-        # verify that a 'conanfile.txt' is present
-        conanFile = self.path / Path("conanfile.txt")
-        if ( not conanFile.exists()):
-            raise Exception(str(conanFile.absolute()) + " is missing!")
-        
-            
+            self._projectFile = projects[0]
             
 
     def path(self):
         """return pathlib.Path for the project folder"""
-        return self.Path
+        return self._path
 
     def projectFile(self):
         """return pathlib.Path for the project file"""        
-        return self.projectFile
+        return self._projectFile
+
+class VsConanProject(VsProject):
+    """A Visual Studio project with conan integration
+
+    it consists of a folder containing:
+     * a single *.vcxproj file
+     * a conanfile.txt file
+     * a Conan.targets file
+    """
+    def __init__(self, path):
+        VsProject.__init__(path)
+
+    def _verify_path(self):
+        VsProject._verify_Path()
+        
+        # verify that a 'conanfile.txt' is present
+        conanFile = self._path / Path("conanfile.txt")
+        if ( not conanFile.exists()):
+            raise Exception(str(conanFile.absolute()) + " is missing!")
+        
+        # verify that a 'Conan.targets' is present
+        f = self._path  / Path('Conan.targets')
+        if (not f.exits()):
+            raise Exception(str(f.absolute()) + " is missing!")
+            
 
 
 
 
 class VerifyIntegration:
 
-    def __init__(self, vsProject):
-        self.vsProject = vsProject
+    def __init__(self, vsConanProject):
+        self.vsConanProject = vsConanProject
         self.messages = []
 
     def verify(self):
         """verify an integration
         returns a failure message or None if all is ok
         """
-        assert(self.vsProject.path.samefile(os.getcwd()))
+        assert(self.vsConanProject.path.samefile(os.getcwd()))
 
         packageDir = Path(__file__).parent
 
@@ -168,15 +188,67 @@ class VerifyIntegration:
                 return None
 
 
-def UpdateIntegration(vsProject):
-    assert(vsProject.path.samefile(os.getcwd()))
+def Integrate(vsProject):
+    """Intergrate conan with an Msbuild Project
+
+    create conanfile.txt & Conan.targets
+    integrate into *.vcxproj file
+    """
+    assert(Path(vsProject.path()).is_dir())
+    assert(Path(os.getcwd()).samefile(vsProject.path()))
+    
+    packageDir = Path(__file__).parent
+
+    # copy the Conan.targets
+    refFile = packageDir / "conanfile.txt"
+    shutil.copy(refFile, vsProject.path())
+
+    # copy the Conan.targets
+    refFile = packageDir / "Conan.targets"
+    shutil.copy(refFile, vsProject.path())
+    
+    # read the project xml file
+    ET.register_namespace("", 'http://schemas.microsoft.com/developer/msbuild/2003')
+    projTree = ET.parse(vsProject.projectFile())
+    root = projTree.getroot()
+
+    # integrate the Conan.targes file into the project
+    # i.e. add 
+    #       <Import Project="Conan.targets" />
+    # to the project file
+    node = ET.SubElement(root, 'Import')
+    node.set('Project', 'Conan.targets')
+
+
+    # include the conconfile.txt in the projec file
+    # i.e. add
+    #       <ItemGroup>
+    #         <Text Include="conanfile.txt" />
+    #       </ItemGroup>
+    # to the project file
+    itemgroup = ET.SubElement(root, 'ItemGroup')
+    textNode = ET.SubElement(itemgroup, 'Text')
+    textNode.set('Include', 'conanfile.txt')
+
+    projTree.write(vsProject.projectFile(), encoding="utf-8", xml_declaration=True)
+
+
+
+
+
+
+
+
+
+def UpdateIntegration(vsConanProject):
+    assert(vsConanProject.path.samefile(os.getcwd()))
 
     packageDir = Path(__file__).parent
     refFile = packageDir / "Conan.targets"
-    shutil.copy(refFile, vsProject.path)
+    shutil.copy(refFile, vsConanProject.path)
 
     refFile = packageDir / "ConanVsIntegration.Debug.targets"
-    shutil.copy(refFile, vsProject.path)
+    shutil.copy(refFile, vsConanProject.path)
 
 def filehash(file):
     """compute file checksum"""
