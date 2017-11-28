@@ -116,10 +116,10 @@ class VsConanProject(VsProject):
      * a Conan.targets file
     """
     def __init__(self, path):
-        VsProject.__init__(path)
+        VsProject.__init__(self, path)
 
     def _verify_path(self):
-        VsProject._verify_Path()
+        VsProject._verify_path(self)
         
         # verify that a 'conanfile.txt' is present
         conanFile = self._path / Path("conanfile.txt")
@@ -128,7 +128,7 @@ class VsConanProject(VsProject):
         
         # verify that a 'Conan.targets' is present
         f = self._path  / Path('Conan.targets')
-        if (not f.exits()):
+        if (not f.exists()):
             raise Exception(str(f.absolute()) + " is missing!")
             
 
@@ -145,7 +145,7 @@ class VerifyIntegration:
         """verify an integration
         returns a failure message or None if all is ok
         """
-        assert(self.vsConanProject.path.samefile(os.getcwd()))
+        assert(self.vsConanProject.path().samefile(os.getcwd()))
 
         packageDir = Path(__file__).parent
 
@@ -241,14 +241,14 @@ def Integrate(vsProject):
 
 
 def UpdateIntegration(vsConanProject):
-    assert(vsConanProject.path.samefile(os.getcwd()))
+    assert(vsConanProject.path().samefile(os.getcwd()))
 
     packageDir = Path(__file__).parent
     refFile = packageDir / "Conan.targets"
-    shutil.copy(refFile, vsConanProject.path)
+    shutil.copy(refFile, vsConanProject.path())
 
     refFile = packageDir / "ConanVsIntegration.Debug.targets"
-    shutil.copy(refFile, vsConanProject.path)
+    shutil.copy(refFile, vsConanProject.path())
 
 def filehash(file):
     """compute file checksum"""

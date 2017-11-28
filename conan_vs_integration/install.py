@@ -55,7 +55,7 @@ class ConanInstallChecksum:
     def __init__(self, vsConanProject):
         self.vsConanProject = vsConanProject
         self.fileHashes = {}
-        for e in self.vsConanProject.path.iterdir():
+        for e in self.vsConanProject.path().iterdir():
             if self._isConanInstallFile(e):
                 self.fileHashes[e] = filehash(e)
     
@@ -64,7 +64,7 @@ class ConanInstallChecksum:
 
         returns [] when successfull or a list of string descriptors if not.
         """
-        conanFiles = [f for f in self.vsConanProject.path.iterdir() if self._isConanInstallFile(f)]
+        conanFiles = [f for f in self.vsConanProject.path().iterdir() if self._isConanInstallFile(f)]
 
         # verify conan install file count
         if (len(conanFiles) > len(self.fileHashes)):
