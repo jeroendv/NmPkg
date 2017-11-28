@@ -188,6 +188,7 @@ class VerifyIntegration:
                 return None
 
 
+from xml.dom import minidom
 def Integrate(vsProject):
     """Intergrate conan with an Msbuild Project
 
@@ -208,16 +209,21 @@ def Integrate(vsProject):
     shutil.copy(refFile, vsProject.path())
     
     # read the project xml file
-    ET.register_namespace("", 'http://schemas.microsoft.com/developer/msbuild/2003')
-    projTree = ET.parse(vsProject.projectFile())
-    root = projTree.getroot()
+    projDom = minidom.parse(str(vsProject.projectFile()))
 
     # integrate the Conan.targes file into the project
     # i.e. add 
     #       <Import Project="Conan.targets" />
     # to the project file
-    node = ET.SubElement(root, 'Import')
-    node.set('Project', 'Conan.targets')
+    import_node = projDom.createElement("Import")
+    import_node.setAttribute("Project", "Conan.targets")
+
+
+    proj_node = projDom.getElementsByTagName("Project")
+    assert len(proj_node) == 1
+    proj_node = proj_node[0]
+    proj_node.appendChild(import_node)
+
 
 
     # include the conconfile.txt in the projec file
@@ -226,11 +232,21 @@ def Integrate(vsProject):
     #         <Text Include="conanfile.txt" />
     #       </ItemGroup>
     # to the project file
-    itemgroup = ET.SubElement(root, 'ItemGroup')
-    textNode = ET.SubElement(itemgroup, 'Text')
-    textNode.set('Include', 'conanfile.txt')
+    text_node = projDom.createElement("Text")
+    text_node.setAttribute("Include", "conanfile.txt")
 
-    projTree.write(vsProject.projectFile(), encoding="utf-8", xml_declaration=True)
+    itemgroup_node = projDom.createElement("ItemGroup")
+    itemgroup_node.appendChild(text_node)
+    
+
+    proj_node = projDom.getElementsByTagName("Project")
+    assert len(proj_node) == 1
+    proj_node = proj_node[0]
+    proj_node.appendChild(itemgroup_node)
+
+    # write the updated project xml config to file
+    with open(vsProject.projectFile(), 'tw') as f:
+        f.write(projDom.toprettyxml())
 
 
 
