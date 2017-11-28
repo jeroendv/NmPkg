@@ -25,45 +25,45 @@ class chdir():
         os.chdir(self.oldPath)
 
 
-class integrat_test(unittest.TestCase):
+class Test_Integrate:
 
     testFilesPre = Path(r"conan_vs_integration\test\TestFiles\VsProjectIntegration.pre")
-    testFilesCurrent = testFilesPre.with_name("VsProjectIntegration.current")
     testFilesVerified = testFilesPre.with_name("VsProjectIntegration.verified")
 
 
-    def setUp(self):
-        # cleanup the test output dir and copy the textures
-        if (self.testFilesCurrent.exists()):
-            shutil.rmtree(self.testFilesCurrent)
-        shutil.copytree(self.testFilesPre, self.testFilesCurrent)
+    def setUp(self, tmpdir):
+        print(str(tmpdir))
+        from distutils.dir_util import copy_tree
+        copy_tree(self.testFilesPre, str(tmpdir))
 
-    def test_creationOfFiles(self):
+    def test_creationOfFiles(self, tmpdir):
         """Verify  that that appropriate files are created
         """
-        with chdir(self.testFilesCurrent / Path("Vs2017Project")) as p: 
+        self.setUp(tmpdir)
+        with chdir(Path(tmpdir) / Path("Vs2017Project")) as p:
             vsProjectPath = p.absolute()
 
             # Test pre-conditions
-            self.assertFalse(Path("conanfile.txt").is_file(),
-                msg="before integration there should not be a 'conanfile.txt'")
-            self.assertFalse(Path("Conan.targets").is_file(),
-                msg="before integration there should not be a 'Conan.targets'")
+            assert not Path("conanfile.txt").is_file(), \
+                "before integration there should not be a 'conanfile.txt'"
+            assert not Path("Conan.targets").is_file(), \
+                "before integration there should not be a 'Conan.targets'"
 
             # test
             Integrate(VsProject(vsProjectPath))
 
             # test post-conditions
             # verify that requried files were created
-            self.assertTrue(Path("conanfile.txt").is_file(),
-                msg="after integration a 'conanfile.txt' file should be present")
-            self.assertTrue(Path("Conan.targets").is_file(),
-                msg="after integration 'Conan.targets' file should be present")
+            assert Path("conanfile.txt").is_file(), \
+                "after integration a 'conanfile.txt' file should be present"
+            assert Path("Conan.targets").is_file(), \
+                "after integration 'Conan.targets' file should be present"
         
-    def test_TargetsIntegration(self):
+    def test_TargetsIntegration(self, tmpdir):
         """Verify that the 'conan.targets' is properly imported in project file
         """
-        with chdir(self.testFilesCurrent / Path("Vs2017Project")) as p:
+        self.setUp(tmpdir)
+        with chdir(Path(tmpdir) / Path("Vs2017Project")) as p:
             # test
             Integrate(VsProject(p.absolute()))
 
@@ -80,14 +80,15 @@ class integrat_test(unittest.TestCase):
                 if ('Project' in c.attrib 
                     and c.get('Project') == 'Conan.targets'):
                     # node found :-)
-                    return 
+                    return
         
-            self.fail(msg='no import node found that imports conan.targets')
+            assert False, "no import node found that imports conan.targets"
 
-    def test_conanFileIntegration(self):
+    def test_conanFileIntegration(self, tmpdir):
         """Verify that the 'conafile.txt' is properly imported in project file
         """
-        with chdir(self.testFilesCurrent / Path("Vs2017Project")) as p:
+        self.setUp(tmpdir)
+        with chdir(Path(tmpdir) / Path("Vs2017Project")) as p:
             # test pre-conditions
             pass
 
@@ -109,10 +110,10 @@ class integrat_test(unittest.TestCase):
                 print(c.tag, c.attrib)
                 if ('Include' in c.attrib 
                     and c.attrib['Include'] == 'conanfile.txt'):
-                    # node found :-)
+                    # node found :-)              
                     return 
         
-            self.fail(msg='conanfile.txt include is missing')
+            assert False, "conanfile.txt include is missing"
 
 
 
