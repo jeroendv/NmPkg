@@ -113,21 +113,9 @@ class Test_Integrate:
                     # node found :-)              
                     return 
         
-            assert False, "conanfile.txt include is missing"
-
-
-
-
-
-
-
-
-
-
-
-
-
+            assert False, "conanfile.txt include is missing from *.vcxproj file"
 
 
 if __name__ == '__main__':
-    unittest.main()
+    import pytest
+    pytest.main()
