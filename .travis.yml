@@ -10,7 +10,7 @@ install:
   - pip install -r requirements.txt
 # command to run tests
 script:
-  - pytest # or py.test for Python versions 3.5 and below
+  - pytest --pastebin=all # or py.test for Python versions 3.5 and below
   - pytest conan_vs_integration/test/Test_Integrate.py
   - pytest -pyargs conan_vs_integration
   - pytest conan_vs_integration
