@@ -8,9 +8,8 @@ python:
 # command to install dependencies
 install:
   - pip install -r requirements.txt
+before_script:
+  - pip install -r test_requirements.txt
 # command to run tests
 script:
-  - pytest --pastebin=all # or py.test for Python versions 3.5 and below
-  - pytest conan_vs_integration/test/Test_Integrate.py
-  - pytest -pyargs conan_vs_integration
-  - pytest conan_vs_integration
+  - pytest  -s -v --cov

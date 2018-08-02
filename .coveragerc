@@ -1,0 +1,13 @@
+# coverage.py config file
+# https://coverage.readthedocs.io/en/latest/config.html
+
+[report]
+
+omit = 
+    # ingore the travis-ci stuff unrelated to this project
+    # note this project is build by travis-ci in
+    # /home/travis/build/jeroendv/svnCleanup
+    /home/travis/virtualenv/*
+    
+    #ignore gitlab-ci files
+    */.local/*
