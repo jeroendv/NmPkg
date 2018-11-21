@@ -1,4 +1,4 @@
-from conan_vs_integration import *
+from NmPackage import *
 import argparse
 
 """integrate conan into MSBuild for a given project

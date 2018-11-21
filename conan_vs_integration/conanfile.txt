@@ -1,9 +1,0 @@
-# see http://conanio.readthedocs.io/en/latest/reference/conanfile_txt.html
-[requires]
-visual_studio_toolset_multi/0.1@JDVlieger/test1
-
-
-[generators]
-visual_studio_toolset_multi
-
-[imports]

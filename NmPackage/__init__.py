@@ -80,32 +80,24 @@ class DebugLog:
 class VsProject:
     """A Visual Studio project consists of a folder and a single *.vcxproj file
     """
-    def __init__(self, path):
-        self._path = Path(path)
+    def __init__(self, vcxproj_file):
+        self._vcxproj_file = Path(vcxproj_file)
         self._verify_path()
 
     def _verify_path(self):
-        if (not self._path.is_dir()):
-            raise Exception("'%s' is not an existing directory" % self._path.absolute())
-
-        # verify that the folder contains only one project
-        projects = [x for x in self._path.iterdir() if x.is_file() and x.suffix == '.vcxproj']
-        if (len(projects) == 0):
-            raise Exception("'%s' is not an a project folde, no '*.vcxproj' file is present" % self._path.absolute())
-        elif (len(projects) > 1):
-            raise Exception("'%s' contains multiple '*.vcxproj' project files" % self._path.absolute())
-        else:
-            assert(len(projects) == 1)
-            self._projectFile = projects[0]
-            
+        if (not self._vcxproj_file.is_file()):
+            raise Exception("'%s' is not an existing file" % self._vcxproj_file.absolute())     
 
     def path(self):
         """return pathlib.Path for the project folder"""
-        return self._path
+        return self._vcxproj_file.parent
 
     def projectFile(self):
         """return pathlib.Path for the project file"""        
-        return self._projectFile
+        return self._vcxproj_file
+
+    def projectName(self):
+        return self._vcxproj_file.stem
 
 class VsConanProject(VsProject):
     """A Visual Studio project with conan integration
@@ -200,53 +192,52 @@ def Integrate(vsProject):
     
     packageDir = Path(__file__).parent
 
-    # copy the Conan.targets
-    refFile = packageDir / "conanfile.txt"
-    shutil.copy(refFile, vsProject.path())
 
     # copy the Conan.targets
-    refFile = packageDir / "Conan.targets"
-    shutil.copy(refFile, vsProject.path())
+    refFile = packageDir / "ProjectName.NmPackageDeps.props"
+    target_file = vsProject.projectName() + ".NmPackageDeps.props"
+    target_file_path = vsProject.path().joinpath(target_file)
+    shutil.copy(refFile, target_file_path)
     
     # read the project xml file
     projDom = minidom.parse(str(vsProject.projectFile()))
 
-    # integrate the Conan.targes file into the project
+    # integrate the XXX.NmPackageDeps.props file into the project
     # i.e. add 
-    #       <Import Project="Conan.targets" />
+    #       <Import Project="XXX.NmPackageDeps.props" />
     # to the project file
     import_node = projDom.createElement("Import")
-    import_node.setAttribute("Project", "Conan.targets")
+    import_node.setAttribute("Project", target_file)
 
 
     proj_node = projDom.getElementsByTagName("Project")
-    assert len(proj_node) == 1
     proj_node = proj_node[0]
     proj_node.appendChild(import_node)
 
 
 
-    # include the conconfile.txt in the projec file
+    # include the XXX.NmPackageDeps.props in the projec file
     # i.e. add
     #       <ItemGroup>
-    #         <Text Include="conanfile.txt" />
+    #         <Text Include="XXX.NmPackageDeps.props" />
     #       </ItemGroup>
     # to the project file
     text_node = projDom.createElement("Text")
-    text_node.setAttribute("Include", "conanfile.txt")
+    text_node.setAttribute("Include", target_file)
 
     itemgroup_node = projDom.createElement("ItemGroup")
     itemgroup_node.appendChild(text_node)
     
 
     proj_node = projDom.getElementsByTagName("Project")
-    assert len(proj_node) == 1
     proj_node = proj_node[0]
     proj_node.appendChild(itemgroup_node)
 
     # write the updated project xml config to file
     with open(vsProject.projectFile(), 'tw') as f:
-        f.write(projDom.toprettyxml())
+        dom_str = projDom.toprettyxml(indent="  ")
+        dom_str = os.linesep.join([s for s in dom_str.splitlines() if s.strip()])
+        f.write(dom_str)
 
 
 

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<!-- Nikon Metrology packages dependency listing
+
+WARNING: AUTO GENERATED FILE, PLEASE DO NOT EDIT MANUALLY BUT USE THE NMPKG TOOL INSTEAD!!
+
+This file should be included in the project file (*.vcxproj) that lives in the same folder as this file.
+
+ <Import Project="<ProjectName>.NmPackageDeps.props" Condition="exists('<projectName>.NmPackageDeps.props')" />
+
+All the Nikon Metrology package property sheets that are depended on by this project are listed here.
+A dependency  on 'packageId' is expressed as follows.
+
+  <Import Project="$(NmPackageDir)\<packageId>\<versionId>\NmPackage.props"/>
+
+the condition is needed to allow the project to be loaded if the package is not yet present on the disk
+-->
+</Project>

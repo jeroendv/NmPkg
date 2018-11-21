@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from conan_vs_integration import *
+from NmPackage import *
 import os
 import shutil
 
@@ -27,7 +27,7 @@ class chdir():
 
 class Test_Integrate:
 
-    testFilesPre = Path(r"conan_vs_integration\test\TestFiles\VsProjectIntegration.pre")
+    testFilesPre = Path(r"NmPackage\test\TestFiles\VsProjectIntegration.pre")
     testFilesVerified = testFilesPre.with_name("VsProjectIntegration.verified")
 
 
@@ -41,36 +41,32 @@ class Test_Integrate:
         """
         self.setUp(tmpdir)
         with chdir(Path(tmpdir) / Path("Vs2017Project")) as p:
-            vsProjectPath = p.absolute()
+            vsProjectPath = p.absolute().joinpath("Vs2017Project.vcxproj")
 
             # Test pre-conditions
-            assert not Path("conanfile.txt").is_file(), \
-                "before integration there should not be a 'conanfile.txt'"
-            assert not Path("Conan.targets").is_file(), \
-                "before integration there should not be a 'Conan.targets'"
+            assert not Path("Vs2017Project.NmPackageDeps.props").is_file(), \
+                "before integration there should not be a 'Vs2017Project.NmPackageDeps.props'"
 
             # test
             Integrate(VsProject(vsProjectPath))
 
             # test post-conditions
             # verify that requried files were created
-            assert Path("conanfile.txt").is_file(), \
-                "after integration a 'conanfile.txt' file should be present"
-            assert Path("Conan.targets").is_file(), \
-                "after integration 'Conan.targets' file should be present"
+            assert Path("Vs2017Project.NmPackageDeps.props").is_file(), \
+                "after integration a 'Vs2017Project.NmPackageDeps.props' file should be present"
         
     def test_TargetsIntegration(self, tmpdir):
-        """Verify that the 'conan.targets' is properly imported in project file
+        """Verify that the 'Vs2017Project.NmPackageDeps.props' is properly imported in project file
         """
         self.setUp(tmpdir)
         with chdir(Path(tmpdir) / Path("Vs2017Project")) as p:
             # test
-            Integrate(VsProject(p.absolute()))
+            Integrate(VsProject(p.absolute().joinpath("Vs2017Project.vcxproj")))
 
 
             # test post-conditions
             # search for the following node under projet file xml root 
-            #       <Import Project="Conan.targets" />
+            #       <Import Project="Vs2017Project.NmPackageDeps.props" />
             projTree = ET.parse(Path("VS2017Project.vcxproj"))
             root = projTree.getroot()
             ns = {'default': 'http://schemas.microsoft.com/developer/msbuild/2003'}
@@ -78,11 +74,11 @@ class Test_Integrate:
             for c in root.findall("default:Import", ns):
                 print(c.tag, c.attrib)
                 if ('Project' in c.attrib 
-                    and c.get('Project') == 'Conan.targets'):
+                    and c.get('Project') == 'Vs2017Project.NmPackageDeps.props'):
                     # node found :-)
                     return
         
-            assert False, "no import node found that imports conan.targets"
+            assert False, "no import node found that imports Vs2017Project.NmPackageDeps.props"
 
     def test_conanFileIntegration(self, tmpdir):
         """Verify that the 'conafile.txt' is properly imported in project file
@@ -93,13 +89,13 @@ class Test_Integrate:
             pass
 
             # test
-            Integrate(VsProject(p.absolute()))
+            Integrate(VsProject(p.absolute().joinpath("Vs2017Project.vcxproj")))
 
 
             # test post-conditions
             # search for the following node under the project file xml root 
             #       <ItemGroup>
-            #         <Text Include="conanfile.txt" />
+            #         <Text Include="Vs2017Project.NmPackageDeps.props" />
             #       </ItemGroup>
             # to the project file
             projTree = ET.parse(Path("VS2017Project.vcxproj"))
@@ -109,11 +105,11 @@ class Test_Integrate:
             for c in root.findall("default:ItemGroup/default:Text", ns):
                 print(c.tag, c.attrib)
                 if ('Include' in c.attrib 
-                    and c.attrib['Include'] == 'conanfile.txt'):
+                    and c.attrib['Include'] == 'Vs2017Project.NmPackageDeps.props'):
                     # node found :-)              
                     return 
         
-            assert False, "conanfile.txt include is missing from *.vcxproj file"
+            assert False, "Vs2017Project.NmPackageDeps.props include is missing from *.vcxproj file"
 
 
 if __name__ == '__main__':

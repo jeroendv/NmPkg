@@ -1,8 +1,0 @@
-# see http://conanio.readthedocs.io/en/latest/reference/conanfile_txt.html
-[requires]
-
-
-[generators]
-visual_studio_toolset_multi
-
-[imports]
