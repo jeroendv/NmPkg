@@ -97,6 +97,7 @@ class VsProject:
         return self._vcxproj_file
 
     def projectName(self):
+        """project name is the project file name without extension"""
         return self._vcxproj_file.stem
 
 class VsConanProject(VsProject):
