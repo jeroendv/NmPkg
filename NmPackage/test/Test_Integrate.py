@@ -81,7 +81,7 @@ class Test_Integrate:
             assert False, "no import node found that imports Vs2017Project.NmPackageDeps.props"
 
     def test_conanFileIntegration(self, tmpdir):
-        """Verify that the 'conafile.txt' is properly imported in project file
+        """Verify that the 'Vs2017Project.NmPackageDeps.props' is properly imported in project file
         """
         self.setUp(tmpdir)
         with chdir(Path(tmpdir) / Path("Vs2017Project")) as p:
@@ -110,6 +110,52 @@ class Test_Integrate:
                     return 
         
             assert False, "Vs2017Project.NmPackageDeps.props include is missing from *.vcxproj file"
+
+    def test_regressionTest(self, tmpdir):
+        """
+        check if result of integration into:
+                NmPackage\test\TestFiles\VsProjectIntegration.pre\Vs2017Project\
+        equals the baseline result:
+                NmPackage\test\TestFiles\VsProjectIntegration.verified\Vs2017Project\
+        """
+        self.setUp(tmpdir)
+        verifiedDir = self.testFilesVerified.absolute()
+        with chdir(Path(tmpdir) / Path("Vs2017Project")) as p:
+            # test
+            Integrate(VsProject(p.absolute().joinpath("Vs2017Project.vcxproj")))
+
+            compare_dirs(verifiedDir, Path(tmpdir))
+
+def compare_dirs(dir1:Path, dir2:Path):
+    """
+    recursive directory comparison
+    """
+    assert dir1.is_dir()
+    assert dir2.is_dir()
+
+    import filecmp
+    dcmp = filecmp.dircmp(dir1, dir2)
+
+    assert not dcmp.left_only, "there should be no left orphans"
+    assert not dcmp.right_only, " there should be no right orphans"
+
+    for file in dcmp.common_files:
+        compare_files(dcmp.left / file, dcmp.right / file)
+
+    for dir in dcmp.common_dirs:
+        compare_dirs(dcmp.left / dir, dcmp.right / dir)
+
+def compare_files(file1:Path, file2:Path):
+    """
+    file comparison
+    """
+    import difflib
+
+    diff = difflib.unified_diff(file1.open("rt").readlines(), file2.open("rt").readlines(), str(file1), str(file2))
+    difflines = list(diff)
+    sys.stdout.writelines(difflines)
+    assert not difflines, "diff should be empty"
+
 
 
 if __name__ == '__main__':
