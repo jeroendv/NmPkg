@@ -201,8 +201,7 @@ def Integrate(vsProject):
     shutil.copy(refFile, target_file_path)
     
     # read the project xml file
-    file_handle = vsProject.projectFile().open("rt")
-    projDom = minidom.parse(file_handle)
+    projDom = minidom.parse(str(vsProject.projectFile()))
 
     # integrate the XXX.NmPackageDeps.props file into the project
     # i.e. add 
