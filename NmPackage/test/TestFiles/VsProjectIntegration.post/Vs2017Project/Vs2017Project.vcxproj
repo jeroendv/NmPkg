@@ -113,10 +113,10 @@
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Vs2017Project.NmPackageDeps" />
+    <Text Include="Vs2017Project.NmPackageDeps.props" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
-  <Import Project="Vs2017Project.NmPackageDeps" />
+  <Import Project="Vs2017Project.NmPackageDeps.props" />
 </Project>
