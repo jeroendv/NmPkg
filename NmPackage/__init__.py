@@ -201,7 +201,8 @@ def Integrate(vsProject):
     shutil.copy(refFile, target_file_path)
     
     # read the project xml file
-    projDom = minidom.parse(str(vsProject.projectFile()))
+    file_handle = vsProject.projectFile().open("rt")
+    projDom = minidom.parse(file_handle)
 
     # integrate the XXX.NmPackageDeps.props file into the project
     # i.e. add 
@@ -237,16 +238,18 @@ def Integrate(vsProject):
     # write the updated project xml config to file
     with open(vsProject.projectFile(), 'tw') as f:
         dom_str = projDom.toprettyxml(indent="  ")
-        dom_str = os.linesep.join([s for s in dom_str.splitlines() if s.strip()])
-        f.write(dom_str)
+        for line in dom_str.splitlines():
+            # skip empty lines
+            if not line.strip():
+                continue
 
+            # space before closing node tag
+            #  NOK: <name attr="value"/>
+            #  OK : <name attr="value" />
+            # this appears to be the visual studion way                       
+            line = line.replace('"/>', '" />')
 
-
-
-
-
-
-
+            f.write(line + "\n")
 
 def UpdateIntegration(vsConanProject):
     assert(vsConanProject.path().samefile(os.getcwd()))
