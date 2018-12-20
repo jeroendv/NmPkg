@@ -11,7 +11,7 @@ This file should be included in the project file (*.vcxproj) that lives in the s
 All the Nikon Metrology package property sheets that are depended on by this project are listed here.
 A dependency  on 'packageId' is expressed as follows.
 
-  <Import Project="$(NmPackageDir)\<packageId>\<versionId>\NmPackage.props"/>
+  <Import Project="$(NmPackageDir)\<packageId>\<versionId>\NmPackage.props" Condition="exists('$(NmPackageDir)\<packageId>\<versionId>\NmPackage.props')" />
 
 the condition is needed to allow the project to be loaded if the package is not yet present on the disk
 -->
