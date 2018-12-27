@@ -180,16 +180,55 @@ class VerifyIntegration:
                 DebugLog.print("hash match! => file is up to date")
                 return None
 
+def Integrate(path):
+    """
+    Integrate '<projectName.>NmPackageDeps.props' into an '*.vcxproj' file
+
+    path can be the path to a *.vcxproj file or a directory containing only one *.vcxproj file
+    """
+    vcxproj_filepath = find_vcxproj(path)
+
+    integrate_vsproject(VsProject(vcxproj_filepath))
+
+    
+    
+def find_vcxproj(path:Path)->Path:
+    """
+    *.vcxproj resolution:
+        * if path is a *.vcxrpoj file then return it.
+        * if path is a directory containing a single *.vcxproj file then return the *.vxcproj file
+        * if path contains zero or multiple *.vcxproj files then an error is raises.
+    """
+    if path.is_file():
+        if not path.match("*.vcxproj"):
+            raise Exception("file is not a *.vcxproj file: "+ str(path))
+
+        return path
+    
+    if path.is_dir():
+        vcxprojectFiles = list(path.glob("*.vcxproj"))
+
+        if len(vcxprojectFiles) == 1:
+            return vcxprojectFiles[0]
+        else:
+            msg = "multiple project files found. specify single project on the command line."
+            msg += "\n" + "/n  * ".join(vcxprojectFiles)
+            raise Exception(msg)
+
 
 from xml.dom import minidom
-def Integrate(vsProject):
-    """Intergrate conan with an Msbuild Project
+def integrate_vsproject(vsProject:VsProject):
+    """
+    Integrate '<projectName>.NmPackageDeps.props' into an `VsProject`
 
-    create conanfile.txt & Conan.targets
+    create <projectName>.NmPackageDeps.props
     integrate into *.vcxproj file
+    
+    fail if  <projectName>.NmPackageDeps.props already exists
     """
     assert(Path(vsProject.path()).is_dir())
     assert(Path(os.getcwd()).samefile(vsProject.path()))
+
     
     packageDir = Path(__file__).parent
 
@@ -198,6 +237,11 @@ def Integrate(vsProject):
     refFile = packageDir / "ProjectName.NmPackageDeps.props"
     target_file = vsProject.projectName() + ".NmPackageDeps.props"
     target_file_path = vsProject.path().joinpath(target_file)
+
+    if target_file_path.exists():
+        raise Exception("Intergration failure. The following file already exists:\n    "+str(target_file_path))
+    
+    # copy file to project dir
     shutil.copy(refFile, target_file_path)
     
     # read the project xml file

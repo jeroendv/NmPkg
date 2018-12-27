@@ -1,7 +1,7 @@
 from NmPackage import *
 import argparse
 
-"""integrate conan into MSBuild for a given project
+"""integrate NmPakakges into MSBuild for a given project
 """
 
 
@@ -65,8 +65,10 @@ def main():
     else:
         assert(args.update is False)
         with DebugLog.scopedPush("Integrate conanwith MsBuild *.vcxproj file"):
-            vsProject = VsProject(args.path)
-            Integrate(vsProject)
+            Integrate(args.path)
+        
+
+
 
 
 

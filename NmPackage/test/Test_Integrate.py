@@ -49,7 +49,7 @@ class Test_Integrate:
                 "before integration there should not be a 'Vs2017Project.NmPackageDeps.props'"
 
             # test
-            Integrate(VsProject(vsProjectPath))
+            integrate_vsproject(VsProject(vsProjectPath))
 
             # test post-conditions
             # verify that requried files were created
@@ -62,7 +62,7 @@ class Test_Integrate:
         self.setUp(tmpdir)
         with chdir(Path(tmpdir) / Path("Vs2017Project")) as p:
             # test
-            Integrate(VsProject(p.absolute().joinpath("Vs2017Project.vcxproj")))
+            integrate_vsproject(VsProject(p.absolute().joinpath("Vs2017Project.vcxproj")))
 
 
             # test post-conditions
@@ -90,7 +90,7 @@ class Test_Integrate:
             pass
 
             # test
-            Integrate(VsProject(p.absolute().joinpath("Vs2017Project.vcxproj")))
+            integrate_vsproject(VsProject(p.absolute().joinpath("Vs2017Project.vcxproj")))
 
 
             # test post-conditions
@@ -123,10 +123,22 @@ class Test_Integrate:
         verifiedDir = self.testFilesVerified.absolute()
         with chdir(Path(tmpdir) / Path("Vs2017Project")) as p:
             # test
-            Integrate(VsProject(p.absolute().joinpath("Vs2017Project.vcxproj")))
+            integrate_vsproject(VsProject(p.absolute().joinpath("Vs2017Project.vcxproj")))
 
             compare_dirs(verifiedDir, Path(tmpdir))
 
+
+    def test_integrate_given_dir(self, tmpdir):
+        """
+        check that a directory containing a single *.vcxproj file can be integrated
+        """
+        self.setUp(tmpdir)
+        verifiedDir = self.testFilesVerified.absolute()
+        with chdir(Path(tmpdir) / Path("Vs2017Project")) as p:
+            # test
+            Integrate(p.absolute())
+            
+            compare_dirs(verifiedDir, Path(tmpdir))
 
 
 
