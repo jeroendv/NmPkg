@@ -251,13 +251,9 @@ def integrate_vsproject(vsProject:VsProject):
     # i.e. add 
     #       <Import Project="XXX.NmPackageDeps.props" />
     # to the project file
-    import_node = projDom.createElement("Import")
+    import_node = projDom.documentElement.appendChild(projDom.createElement("Import"))
     import_node.setAttribute("Project", target_file)
 
-
-    proj_node = projDom.getElementsByTagName("Project")
-    proj_node = proj_node[0]
-    proj_node.appendChild(import_node)
 
 
 
@@ -267,16 +263,11 @@ def integrate_vsproject(vsProject:VsProject):
     #         <Text Include="XXX.NmPackageDeps.props" />
     #       </ItemGroup>
     # to the project file
-    text_node = projDom.createElement("Text")
+
+    group_node = projDom.documentElement.appendChild(projDom.createElement("ItemGroup"))
+    text_node = group_node.appendChild(projDom.createElement("Text"))
     text_node.setAttribute("Include", target_file)
 
-    itemgroup_node = projDom.createElement("ItemGroup")
-    itemgroup_node.appendChild(text_node)
-    
-
-    proj_node = projDom.getElementsByTagName("Project")
-    proj_node = proj_node[0]
-    proj_node.appendChild(itemgroup_node)
 
     # write the updated project xml config to file
     with open(vsProject.projectFile(), 'tw') as f:
