@@ -271,7 +271,7 @@ def integrate_vsproject(vsProject:VsProject):
 
     # write the updated project xml config to file
     with open(vsProject.projectFile(), 'tw') as f:
-        dom_str = projDom.toprettyxml(indent="  ")
+        dom_str = projDom.toprettyxml(indent="  ", encoding="utf-8").decode()
         for line in dom_str.splitlines():
             # skip empty lines
             if not line.strip():
