@@ -86,7 +86,9 @@ class VsProject:
 
     def _verify_path(self):
         if (not self._vcxproj_file.is_file()):
-            raise Exception("'%s' is not an existing file" % self._vcxproj_file.absolute())     
+            raise Exception("'%s' is not an existing file" % self._vcxproj_file.absolute())
+        if not self._vcxproj_file.match("*.vcxproj"):
+            raise Exception("")
 
     def path(self):
         """return pathlib.Path for the project folder"""
