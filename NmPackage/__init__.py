@@ -322,6 +322,17 @@ class NmPackageId(object):
             packageId = self.packageId,
             versionId = self.versionId)
 
+    
+    def __repr__(self) -> str:
+        return "NmPackageId({}, {})".format(self.packageId, self.versionId)
+
+    def __eq__(self, other) -> bool:
+        return self.packageId == other.packageId and \
+               self.versionId == other.versionId
+    
+    def __hash__(self):
+        return hash(self.path)
+
 class VsProjectDependencySerialization(object):
     """
     Serialize and deserialize a list of `NmPackageId`s to an MsBuild properties file
