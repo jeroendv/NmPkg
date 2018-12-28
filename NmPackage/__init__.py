@@ -233,16 +233,13 @@ def integrate_vsproject(vsProject:VsProject):
     packageDir = Path(__file__).parent
 
 
-    # copy the Conan.targets
-    refFile = packageDir / "ProjectName.NmPackageDeps.props"
-    target_file = vsProject.projectName() + ".NmPackageDeps.props"
-    target_file_path = vsProject.path().joinpath(target_file)
-
+    # generate empty '<projectName>.NmPackageDeps.props' file
+    target_file_path = vsProject.path() / Path(vsProject.projectName() + ".NmPackageDeps.props")
     if target_file_path.exists():
         raise Exception("Intergration failure. The following file already exists:\n    "+str(target_file_path))
     
-    # copy file to project dir
-    shutil.copy(refFile, target_file_path)
+    with open(target_file_path, 'wt') as f:
+        f.write(VsProjectDependencySerialization.serialize())
     
     # read the project xml file
     projDom = minidom.parse(str(vsProject.projectFile()))
@@ -252,9 +249,7 @@ def integrate_vsproject(vsProject:VsProject):
     #       <Import Project="XXX.NmPackageDeps.props" />
     # to the project file
     import_node = projDom.documentElement.appendChild(projDom.createElement("Import"))
-    import_node.setAttribute("Project", target_file)
-
-
+    import_node.setAttribute("Project", target_file_path.name)
 
 
     # include the XXX.NmPackageDeps.props in the projec file
@@ -263,10 +258,9 @@ def integrate_vsproject(vsProject:VsProject):
     #         <Text Include="XXX.NmPackageDeps.props" />
     #       </ItemGroup>
     # to the project file
-
     group_node = projDom.documentElement.appendChild(projDom.createElement("ItemGroup"))
     text_node = group_node.appendChild(projDom.createElement("Text"))
-    text_node.setAttribute("Include", target_file)
+    text_node.setAttribute("Include", target_file_path.name)
 
 
     # write the updated project xml config to file
