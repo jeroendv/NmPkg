@@ -353,6 +353,72 @@ A dependency  on 'packageId' is expressed as follows.
 
 the condition is needed to allow the project to be loaded if the package is not yet present on the disk
 """
+    @staticmethod
+    def deserialize( xml : str) -> set:
+        """
+        parse a '<projectName>.NmPacakageDeps.props' xml stream adn return the set of `NmPackageId`s
+        TODO: generalize to use IO streams to make it easy to unit test (read from in-mem string stream instead of a file)
+        yet also type safe!
+        """
+        from xml.dom import minidom, Node
+        dom = minidom.parseString(xml)
+        print(dom)
+        nmPackageIds = set()
+        for c in dom.documentElement.childNodes:
+            
+            if c.nodeType == Node.COMMENT_NODE:
+                # a comment node is expected and ignored
+                continue
+            elif c.nodeType == Node.TEXT_NODE:
+                # TODO: what exactly are text nodes? this seems to be normal though!?
+                continue
+            
+            # all other child nodes should be "Import" elements
+            # Bail-Out if any other nodetype is found!
+            if c.nodeType != Node.ELEMENT_NODE:
+                raise Exception("unknown node: " + str(c))
+            if c.tagName != "Import":
+                raise Exception("Node with unknown tag (expected 'Import' tag): " + c.tagName)
+
+            # attempt to deserialize the import_node
+            nmPackage = VsProjectDependencySerialization._deserializer_NmPackageId(c)
+            nmPackageIds.add(nmPackage)
+
+        return nmPackageIds
+
+
+    @staticmethod
+    def _deserializer_NmPackageId(import_node) -> NmPackageId:
+        r"""
+        Desirializet an import xml element to an `NmPackageId`
+
+           <Import Project="$(NmPackageDir)\<packageId>\<versionId>\NmPackage.props" 
+                   Condition="exists('$(NmPackageDir)\<packageId>\<versionId>\NmPackage.props')" />
+        """
+        assert "Import" == import_node.tagName
+        print("project: " + import_node.getAttribute("Project"))
+        package_path = Path(import_node.getAttribute("Project"))
+        print("package_path: " + str(package_path) )
+        
+        # break path into parts
+        propsFile = package_path.name
+        versionId = package_path.parent.name
+        packageId = package_path.parent.parent.name
+        PackageDir = package_path.parent.parent.parent.name
+
+        # create NmPackageId
+        nmPackageId  = NmPackageId(packageId, versionId)
+
+        # check that all whole path was parsed
+        if nmPackageId.path != str(package_path):
+            raise Exception(r"""Path has wrong format:
+expected: $(NmPackageDir)\<packageId>\<versionId>\NmPackage.props
+actual  : {}
+parsed  : {}""".format(
+            str(package_path), nmPackageId.path))
+
+        return nmPackageId
+
 
     @staticmethod
     def serialize(packages: set = set()) -> str:
