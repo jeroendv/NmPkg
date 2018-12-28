@@ -303,4 +303,79 @@ def filehash(file):
         return h.digest()
 
 
+class NmPackageId(object):
+    """
+    A Nikon Metrology Package Identifier (NmPackage for short) is identified by <packageId> and a <versionId>
+    """
+    def __init__(self, packageId:str, versionId:str):
+        self._packageId = packageId
+        self._versionId = versionId
+
+    @property
+    def packageId(self) -> str :
+        return self._packageId
+
+    @property
+    def versionId(self) -> str : 
+        return self._versionId
+
+    @property
+    def path(self) -> str:
+        """
+        path to the System Wide package properties file
+        """
+        return r"$(NmPackageDir)\{packageId}\{versionId}\NmPackage.props".format(
+            packageId = self.packageId,
+            versionId = self.versionId)
+
+class VsProjectDependencySerialization(object):
+    """
+    Serialize and deserialize a list of `NmPackageId`s to an MsBuild properties file
+    """
+    __comment = r"""
+Nikon Metrology packages dependency listing
+
+WARNING: AUTO GENERATED FILE, PLEASE DO NOT EDIT MANUALLY BUT USE THE NMPKG TOOL INSTEAD!!
+
+This file should be included in the project file (*.vcxproj) that lives in the same folder as this file.
+
+    <Import Project="<ProjectName>.NmPackageDeps.props" Condition="exists('<projectName>.NmPackageDeps.props')" />
+
+All the Nikon Metrology package property sheets that are depended on by this project are listed here.
+A dependency  on 'packageId' is expressed as follows.
+
+    <Import Project="$(NmPackageDir)\<packageId>\<versionId>\NmPackage.props" Condition="exists('$(NmPackageDir)\<packageId>\<versionId>\NmPackage.props')" />
+
+the condition is needed to allow the project to be loaded if the package is not yet present on the disk
+"""
+
+    @staticmethod
+    def serialize(packages: set = set()) -> str:
+        """
+        Serialize a set of `NmPackageId`s to a '<ProjectName>.NmPackageDeps.props` xml stream
+        """
+        # create xml document
+        from xml.dom import minidom
+        dom = minidom.getDOMImplementation().createDocument(None, "Project", None)        
+        dom.documentElement.setAttribute("DefaultTargets", "Build")
+        dom.documentElement.setAttribute("ToolsVersion", "4.0")
+        dom.documentElement.setAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003")
+
+        # add comment node
+        dom.documentElement.appendChild(dom.createComment(VsProjectDependencySerialization.__comment))
+
+        # sort packages alphabetically
+        # this will make it eaiser for humans to find a package
+        # it also ensures that if a non-empty VCS diff is an actual change and not just a reordering
+        path_as_key = lambda nmPackageId: nmPackageId.path
+        sorted_packages = sorted(packages, key=path_as_key )     
+
+        # add Import nodes to dom
+        for e in sorted_packages:
+            import_node = dom.documentElement.appendChild(dom.createElement("Import"))
+            import_node.setAttribute("Project", e.path)
+            import_node.setAttribute("Condition", "Exists('{}')".format(e.path))
+
+        # pretty print
+        return dom.toprettyxml(indent="  ", encoding="utf-8").decode()
 
