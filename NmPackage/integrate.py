@@ -8,11 +8,7 @@ import argparse
 def parse_cli_args():
     """parse the script input arguments"""
     parser = argparse.ArgumentParser(description = "Conan integration for Visual studio MSBuild")
-
-    parser.add_argument("-u", "--update",
-                        help="verify the integration and reintegration in needed.",
-                        action="store_true")
-                        
+                   
     parser.add_argument("-v", "--verbose",
                     help="increase output verbosity",
                     action="store_true")
@@ -20,8 +16,9 @@ def parse_cli_args():
     parser.add_argument("-d", "--debug",
                     help="enable debug output",
                     action="store_true")
+
     parser.add_argument("path",
-                    help="path to the folder containing a *.vcxproj file",
+                    help="path to the folder containing a single *.vcxproj file or a specific *.vcxproj file",
                     nargs='?',
                     default="./")
 
@@ -45,27 +42,9 @@ def parse_cli_args():
 def main():
 
     args = parse_cli_args()
-
-
-    if (args.update):
-        with DebugLog.scopedPush("integration update"):
-            vsConanProject = VsConanProject(args.path)
-            msg = VerifyIntegration(vsConanProject).verify()
-            if (msg is None):
-                DebugLog.print("everything verified ok, so exit with success-code")
-                sys.exit(0)
-            else:
-                DebugLog.print("verification failed! => force reintegration")
-                
-                UpdateIntegration(vsConanProject)
-
-                # force restart to pick up on new '*.targets' files
-                MsBuild.Error("conan integration was updated. restart build is required!")
-                sys.exit(1)
-    else:
-        assert(args.update is False)
-        with DebugLog.scopedPush("Integrate conanwith MsBuild *.vcxproj file"):
-            Integrate(args.path)
+  
+    with DebugLog.scopedPush("Integrate conanwith MsBuild *.vcxproj file"):
+        Integrate(args.path)
         
 
 

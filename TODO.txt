@@ -1,41 +1,27 @@
-* write documentations and use-cases
-* unit test the use cases
-
-* use an external config file (i.e. conanVsIntegration.txt) to map visual studio settings to conan settings.
-
-* add toolset condition instead of VS version condition to the buildProperties.
-  see also : https://github.com/conan-io/conan/issues/966
-
-  => how does it differ from my custom generator?
-
-* integrate should:
-  + add Conan.Targets
-  + add conanfile.txt
-  + add conanVsIntegration.txt
-
-* add imports based on 'conan_imports_manifest.txt'
-  <Target Name="ConanImports" AfterTargets="Build">
-    <Message Text="Copy conan imported files to the build output directory" Importance="high" />
-  </Target>
-
-* add imports targets preferably one that used symlinks from the packages themselves to avoid copying
-  I.e. there is also no [imports] section in the conanfile.txt because that will copy the files
-  alternatively make sure that the copy is timestamp aware to avoid copying file that are already there
-
-* add version number to Conan.Targets
-
 * detect if conan_vs_integration tool is missing or outdated?
   optionally automatically install/update it?
   add a 'pip install conan_vs_integration -u' target to conan.Targets?
 
-* add conan to deps of this package
+* a manager to 
+  * list all local installed packages
+  * check if a package is installed,
+  *  install new packages
+  *  remove packages
+  *  keep track of package usages (queries to install)
 
-* verify that the 'visual_studio_toolset_multi' generator is used!
+* a manager to search for packages:
+  * from svn 
+  * from git
 
-* verify that the conanfile.txt is part of the project
-* verify that conanVsIntegration.txt is part of the project
 
-* how to run the tool for all projects prior to invoking msbuild in cc.net
-  problem: which settings are used by the solutions?
-  -> mark CI profiles in the conanVsIntegration.txt file
+replace <ProjectName>.NmPackageDeps.props with conaninfo.txt like file and autogenerate the props file.
+Why:
+  * easier to maintain
+  * closer to the conan use-case making migration easier
+
+
+
+
+
+
 
