@@ -115,7 +115,7 @@ def test_empty_deserialization():
     # WHEN deserializing 
     nmPackages = VsProjectDependencySerialization.deserialize(xml_in)
 
-    # THEN an empty list is returned
+    # THEN an empty set is returned
     assert  not nmPackages
 
 def test_1_deserialization():
@@ -125,7 +125,7 @@ def test_1_deserialization():
     # WHEN deserializing 
     nmPackages = VsProjectDependencySerialization.deserialize(xml_in)
 
-    # THEN a list with a single package is returned
+    # THEN a set with a single package is returned
     assert  set([package_A_2]) == nmPackages
 
 
@@ -136,7 +136,7 @@ def test_2_deserialization_order():
     # WHEN deserializing 
     nmPackages = VsProjectDependencySerialization.deserialize(xml_in)
 
-    # THEN a list with a single package is returned
+    # THEN a set with a the two package is returned
     assert  set([package_A_1, package_A_2]) == nmPackages
 
 

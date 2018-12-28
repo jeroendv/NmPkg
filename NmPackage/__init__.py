@@ -78,7 +78,7 @@ class DebugLog:
 
 
 class VsProject:
-    """A Visual Studio project consists of a folder and a single *.vcxproj file
+    """A Visual Studio project is identified by a *.vcxproj file
     """
     def __init__(self, vcxproj_file):
         self._vcxproj_file = Path(vcxproj_file)
@@ -227,9 +227,7 @@ def integrate_vsproject(vsProject:VsProject):
     fail if  <projectName>.NmPackageDeps.props already exists
     """
     assert(Path(vsProject.path()).is_dir())
-    assert(Path(os.getcwd()).samefile(vsProject.path()))
 
-    
     packageDir = Path(__file__).parent
 
 
@@ -252,7 +250,7 @@ def integrate_vsproject(vsProject:VsProject):
     import_node.setAttribute("Project", target_file_path.name)
 
 
-    # include the XXX.NmPackageDeps.props in the projec file
+    # include the XXX.NmPackageDeps.props in the project file
     # i.e. add
     #       <ItemGroup>
     #         <Text Include="XXX.NmPackageDeps.props" />
@@ -274,7 +272,7 @@ def integrate_vsproject(vsProject:VsProject):
             # space before closing node tag
             #  NOK: <name attr="value"/>
             #  OK : <name attr="value" />
-            # this appears to be the visual studion way                       
+            # this appears to be the visual studio way                       
             line = line.replace('"/>', '" />')
 
             f.write(line + "\n")
@@ -335,7 +333,7 @@ class NmPackageId(object):
 
 class VsProjectDependencySerialization(object):
     """
-    Serialize and deserialize a list of `NmPackageId`s to an MsBuild properties file
+    Serialize and deserialize a list of `NmPackageId`s to an MsBuild properties xml 
     """
     __comment = r"""
 Nikon Metrology packages dependency listing
@@ -375,6 +373,8 @@ the condition is needed to allow the project to be loaded if the package is not 
             
             # all other child nodes should be "Import" elements
             # Bail-Out if any other nodetype is found!
+            # I.e. encourage the user of the NmPkg tool to edit this file maximizing consistency
+            # and preventing misuse of the file for other purposes.
             if c.nodeType != Node.ELEMENT_NODE:
                 raise Exception("unknown node: " + str(c))
             if c.tagName != "Import":
