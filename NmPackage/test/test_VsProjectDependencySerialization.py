@@ -108,6 +108,39 @@ def test_2_serialization_order():
     assert xml_2_deps == xml_out2
 
 
+def test_empty_deserialization():
+    # GIVEN an empty props file
+    xml_in = xml_0_deps
+
+    # WHEN deserializing 
+    nmPackages = VsProjectDependencySerialization.deserialize(xml_in)
+
+    # THEN an empty list is returned
+    assert  not nmPackages
+
+def test_1_deserialization():
+    # GIVEN a props file with a single dependency
+    xml_in = xml_1_deps
+
+    # WHEN deserializing 
+    nmPackages = VsProjectDependencySerialization.deserialize(xml_in)
+
+    # THEN a list with a single package is returned
+    assert  set([package_A_2]) == nmPackages
+
+
+def test_2_deserialization_order():
+    # GIVEN a props file with a two dependency
+    xml_in = xml_2_deps
+
+    # WHEN deserializing 
+    nmPackages = VsProjectDependencySerialization.deserialize(xml_in)
+
+    # THEN a list with a single package is returned
+    assert  set([package_A_1, package_A_2]) == nmPackages
+
+
+
 
 
 
