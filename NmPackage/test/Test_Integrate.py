@@ -28,7 +28,8 @@ class chdir():
 
 class Test_Integrate:
 
-    testFilesPre = Path(r"NmPackage\test\TestFiles\VsProjectIntegration.pre")
+
+    testFilesPre = Path(__file__).parent / Path("TestFiles/VsProjectIntegration.pre")
     testFilesVerified = testFilesPre.with_name("VsProjectIntegration.verified")
 
 
