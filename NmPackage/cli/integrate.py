@@ -26,7 +26,8 @@ def parse_cli_args():
                     default="./")
 
     parser.add_argument("-N", "--dry-run",
-                        help="Do not perform any actions, only simulate them.")
+                        help="Do not perform any actions, only simulate them.",
+                        action="store_true")
 
     args = parser.parse_args()
 
