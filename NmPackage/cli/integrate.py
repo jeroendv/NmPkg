@@ -1,5 +1,7 @@
 from NmPackage import *
 import argparse
+from NmPackage.debug import *
+import sys
 
 """integrate NmPakakges into MSBuild for a given project
 """
@@ -27,24 +29,23 @@ def parse_cli_args():
 
     args = parser.parse_args()
 
-    # register custom exception handler
-    h = MsBuildExceptionHandle(args.debug)
-    sys.excepthook = h.exception_handler
-    
-    if args.debug:
-        DebugLog.enabled = True
-    
     with DebugLogScopedPush("cli arguments:"):
         DebugLog.print(str(args))
-    
+
     return args
 
 def main():
+    # register custom exception handler
+    sys.excepthook = ExceptionHandle()
 
+    # parse cli input  
     args = parse_cli_args()
-  
-    with DebugLog.scopedPush("Integrate conanwith MsBuild *.vcxproj file"):
-        Integrate(args.path)
+
+    # set debug log state
+    DebugLog.enabled = args.debug
+    
+    # call 
+    Integrate(Path(args.path))
         
 
 

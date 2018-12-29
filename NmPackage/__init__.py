@@ -24,9 +24,6 @@ from NmPackage.debug import ExceptionHandle
 import xml.etree.ElementTree as ET
 
 
-# By default register Debug-enabled exception handler
-# each cli-script should overrule this bases on the user supplied  '--debug'  cli flag
-sys.excepthook = ExceptionHandle(True).exception_handler
 
 class VsProject:
     """

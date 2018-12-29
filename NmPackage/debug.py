@@ -4,16 +4,13 @@ import traceback
 class ExceptionHandle:
     """custom Exception handler for this cli that suppresses the stack trace by default"""
 
-    def __init__(self, debug):
-        self.debug = debug
-
     def exception_handler(self, exception_type, exception, tb):
         # format python exception
         sys.stderr.write("Error: " + str(exception_type.__name__) + " : " + str(exception))
         sys.stderr.write("\n")
 
         # print stack trace in debug mode only
-        if (self.debug):
+        if (DebugLog.enabled):
             traceback.print_tb(tb)
 
 class DebugLogScopedPush:
@@ -36,7 +33,7 @@ class DebugLog:
     """An indentation aware debug log stream"""
 
     indentLvl = 0
-    enabled = False
+    enabled = True
 
     @staticmethod
     def print(msg):
