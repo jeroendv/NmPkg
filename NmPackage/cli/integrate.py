@@ -1,6 +1,7 @@
 from NmPackage import *
 import argparse
 from NmPackage.debug import *
+from NmPackage.save import *
 import sys
 
 """integrate NmPakakges into MSBuild for a given project

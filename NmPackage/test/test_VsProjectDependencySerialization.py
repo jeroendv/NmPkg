@@ -5,7 +5,7 @@ Unit test for `VsProjectDependencySerialization`
 import pytest
 import unittest
 from NmPackage import NmPackageId
-from NmPackage import VsProjectDependencySerialization
+from NmPackage.save import VsProjectDependencySerialization
 
 
 package_A_1 = NmPackageId("packageA", "1")

@@ -1,12 +1,12 @@
-import unittest
-from pathlib import Path
 
-from NmPackage import *
+from pathlib import Path
 import os
 import shutil
 
 import xml.etree.ElementTree as ET
 
+from NmPackage import *
+from NmPackage.save import *
 from NmPackage.test import *
 
 class chdir():
