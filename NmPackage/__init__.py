@@ -194,14 +194,11 @@ class NmPackageId(object):
         return self._versionId
 
     @property
-    def path(self) -> str:
+    def property_path(self) -> PurePath:
         """
-        path to the System Wide package properties file
+        path to the package properties file
         """
-        return r"$(NmPackageDir)\{packageId}\{versionId}\NmPackage.props".format(
-            packageId = self.packageId,
-            versionId = self.versionId)
-
+        return PurePath(self.packageId) / PurePath(self.versionId) / PurePath("NmPackage.props")
     
     def __repr__(self) -> str:
         return "NmPackageId({}, {})".format(self.packageId, self.versionId)
@@ -211,7 +208,7 @@ class NmPackageId(object):
                self.versionId == other.versionId
     
     def __hash__(self):
-        return hash(self.path)
+        return hash(str(self.property_path))
 
 class VsProjectDependencySerialization(object):
     """
@@ -291,12 +288,13 @@ the condition is needed to allow the project to be loaded if the package is not 
         nmPackageId  = NmPackageId(packageId, versionId)
 
         # check that all whole path was parsed
-        if nmPackageId.path != str(package_path):
+        parsed_package_path = "$(NmPackageDir)\\" + str(nmPackageId.property_path)
+        if parsed_package_path != str(package_path):
             raise Exception(r"""Path has wrong format:
 expected: $(NmPackageDir)\<packageId>\<versionId>\NmPackage.props
 actual  : {}
 parsed  : {}""".format(
-            str(package_path), nmPackageId.path))
+            str(package_path), parsed_package_path))
 
         return nmPackageId
 
@@ -319,14 +317,15 @@ parsed  : {}""".format(
         # sort packages alphabetically
         # this will make it eaiser for humans to find a package
         # it also ensures that if a non-empty VCS diff is an actual change and not just a reordering
-        path_as_key = lambda nmPackageId: nmPackageId.path
+        path_as_key = lambda nmPackageId: str(nmPackageId.property_path)
         sorted_packages = sorted(packages, key=path_as_key )     
 
         # add Import nodes to dom
         for e in sorted_packages:
+            package_path = "$(NmPackageDir)\\" + str(e.property_path)
             import_node = dom.documentElement.appendChild(dom.createElement("Import"))
-            import_node.setAttribute("Project", e.path)
-            import_node.setAttribute("Condition", "Exists('{}')".format(e.path))
+            import_node.setAttribute("Project", package_path)
+            import_node.setAttribute("Condition", "Exists('{}')".format(package_path))
 
         # pretty print
         return dom.toprettyxml(indent="  ", encoding="utf-8").decode()
