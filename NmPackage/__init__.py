@@ -1,6 +1,7 @@
 
 import os
 import sys
+from pathlib import PurePath
 from pathlib import Path
 import hashlib
 import binascii
@@ -17,29 +18,25 @@ import xml.etree.ElementTree as ET
 # each cli-script should overrule this bases on the user supplied  '--debug'  cli flag
 sys.excepthook = ExceptionHandle(True).exception_handler
 
-
 class VsProject:
-    """A Visual Studio project is identified by a *.vcxproj file
     """
-    def __init__(self, vcxproj_file):
-        self._vcxproj_file = Path(vcxproj_file)
-        self._verify_path()
+    Representation of a a Visual Studio project and its package dependencies
+    
+    identified by:
+      * a *.vcxproj file
+      * and a set of `NmPackageId`'s
+    """
+    def __init__(self, vcxproj_file:PurePath):
+        self._vcxproj_file = PurePath(vcxproj_file)
+        self._NmPackageSet = set()
 
-    def _verify_path(self):
-        if (not self._vcxproj_file.is_file()):
-            raise Exception("'%s' is not an existing file" % self._vcxproj_file.absolute())
-        if not self._vcxproj_file.match("*.vcxproj"):
-            raise Exception("")
-
-    def path(self):
-        """return pathlib.Path for the project folder"""
-        return self._vcxproj_file.parent
-
-    def projectFile(self):
-        """return pathlib.Path for the project file"""        
+    @property
+    def project_filepath(self) -> PurePath:
+        """the *.vcxproj file path """        
         return self._vcxproj_file
 
-    def projectName(self):
+    @property
+    def projectName(self) -> str:
         """project name is the project file name without extension"""
         return self._vcxproj_file.stem
 
@@ -80,7 +77,7 @@ def find_vcxproj(path:Path)->Path:
 
 
 from xml.dom import minidom
-def integrate_vsproject(vsProject:VsProject):
+def integrate_vsproject(vsProject: VsProject):
     """
     Integrate '<projectName>.NmPackageDeps.props' into an `VsProject`
 
@@ -89,21 +86,22 @@ def integrate_vsproject(vsProject:VsProject):
     
     fail if  <projectName>.NmPackageDeps.props already exists
     """
-    assert(Path(vsProject.path()).is_dir())
+    assert(Path(vsProject.project_filepath).exists())
 
     packageDir = Path(__file__).parent
 
 
     # generate empty '<projectName>.NmPackageDeps.props' file
-    target_file_path = vsProject.path() / Path(vsProject.projectName() + ".NmPackageDeps.props")
-    if target_file_path.exists():
+    target_file_path = vsProject.project_filepath.parent / Path(vsProject.projectName + ".NmPackageDeps.props")
+    if Path(target_file_path).exists():
         raise Exception("Intergration failure. The following file already exists:\n    "+str(target_file_path))
     
     with open(target_file_path, 'wt') as f:
         f.write(VsProjectDependencySerialization.serialize())
     
     # read the project xml file
-    projDom = minidom.parse(str(vsProject.projectFile()))
+    with Path(vsProject.project_filepath).open("rt") as f: 
+        projDom = minidom.parse(f)
 
     # integrate the XXX.NmPackageDeps.props file into the project
     # i.e. add 
@@ -125,7 +123,7 @@ def integrate_vsproject(vsProject:VsProject):
 
 
     # write the updated project xml config to file
-    with open(vsProject.projectFile(), 'tw') as f:
+    with Path(vsProject.project_filepath).open( 'tw') as f:
         dom_str = projDom.toprettyxml(indent="  ", encoding="utf-8").decode()
         for line in dom_str.splitlines():
             # skip empty lines
@@ -301,4 +299,5 @@ parsed  : {}""".format(
 
         # pretty print
         return dom.toprettyxml(indent="  ", encoding="utf-8").decode()
+
 
