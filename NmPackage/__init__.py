@@ -1,4 +1,18 @@
+"""
+Main module of the NmPkg tool
 
+This module defines the classes to describe projects, packages and project-package dependencies.
+
+None of the classes in this module interact with the file system! 
+Instead they allow the dev to model a project and its package dependencies.
+
+See the NmPackage.read module to create a `VsProject` obj by reading 
+'<projectName>.vxcproj' and '<projectName>.NmPackageDeps.props'
+
+And the NmPackage.save module to save a 'VsProject' to disk thus modifying
+'<projectName>.vxcproj' and '<projectName>.NmPackageDeps.props'
+
+"""
 import os
 import sys
 from pathlib import PurePath
