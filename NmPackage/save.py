@@ -1,5 +1,6 @@
 from NmPackage import *
 from pathlib import Path
+from pathlib import PureWindowsPath
 
 def Integrate(path:Path):
     """
@@ -232,7 +233,7 @@ the condition is needed to allow the project to be loaded if the package is not 
         nmPackageId  = NmPackageId(packageId, versionId)
 
         # check that all whole path was parsed
-        parsed_package_path = "$(NmPackageDir)\\" + str(nmPackageId.property_path)
+        parsed_package_path = "$(NmPackageDir)\\" + str(PureWindowsPath(nmPackageId.property_path))
         if parsed_package_path != str(package_path):
             raise Exception(r"""Path has wrong format:
 expected: $(NmPackageDir)\<packageId>\<versionId>\NmPackage.props
@@ -266,7 +267,7 @@ parsed  : {}""".format(
 
         # add Import nodes to dom
         for e in sorted_packages:
-            package_path = "$(NmPackageDir)\\" + str(e.property_path)
+            package_path = "$(NmPackageDir)\\" + str(PureWindowsPath(e.property_path))
             import_node = dom.documentElement.appendChild(dom.createElement("Import"))
             import_node.setAttribute("Project", package_path)
             import_node.setAttribute("Condition", "Exists('{}')".format(package_path))
