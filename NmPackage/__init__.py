@@ -308,9 +308,8 @@ the condition is needed to allow the project to be loaded if the package is not 
                    Condition="exists('$(NmPackageDir)\<packageId>\<versionId>\NmPackage.props')" />
         """
         assert "Import" == import_node.tagName
-        print("project: " + import_node.getAttribute("Project"))
-        package_path = Path(import_node.getAttribute("Project"))
-        print("package_path: " + str(package_path) )
+        from pathlib import PureWindowsPath
+        package_path = PureWindowsPath(import_node.getAttribute("Project"))
         
         # break path into parts
         propsFile = package_path.name
