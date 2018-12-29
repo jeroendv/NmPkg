@@ -69,7 +69,7 @@ class Test_Integrate:
             # test post-conditions
             # search for the following node under projet file xml root 
             #       <Import Project="Vs2017Project.NmPackageDeps.props" />
-            projTree = ET.parse(Path("VS2017Project.vcxproj"))
+            projTree = ET.parse(Path("Vs2017Project.vcxproj"))
             root = projTree.getroot()
             ns = {'default': 'http://schemas.microsoft.com/developer/msbuild/2003'}
 
@@ -100,7 +100,7 @@ class Test_Integrate:
             #         <Text Include="Vs2017Project.NmPackageDeps.props" />
             #       </ItemGroup>
             # to the project file
-            projTree = ET.parse(Path("VS2017Project.vcxproj"))
+            projTree = ET.parse(Path("Vs2017Project.vcxproj"))
             root = projTree.getroot()
             ns = {'default': 'http://schemas.microsoft.com/developer/msbuild/2003'}
 
