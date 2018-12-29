@@ -6,75 +6,16 @@ import hashlib
 import binascii
 import shutil
 import traceback
+from NmPackage.debug import DebugLog
+from NmPackage.debug import ExceptionHandle
 
 
 import xml.etree.ElementTree as ET
 
 
-class MsBuild:
-    
-    def Error(msg):
-        """print an MSBuild error message to stderr"""
-        sys.stderr.write("Error: " + msg + "\n")
-
-class MsBuildExceptionHandle:
-    """Exception handler for processing by MsBuild"""
-
-    def __init__(self, debug):
-        self.debug = debug
-
-    def exception_handler(self, exception_type, exception, tb):
-        # format python exception as MsBuild error messages
-        MsBuild.Error(str(exception_type.__name__) + " : " + str(exception))
-        if (self.debug):
-            traceback.print_tb(tb)
-
-
-class DebugLogScopedPush:
-    def __init__(self, msg = None):
-        self.msg = msg
-
-    def __enter__(self):
-        if(self.msg is not None):
-            DebugLog.print(self.msg)
-            
-        self.originalIndentLvl = DebugLog.indentLvl
-        DebugLog.push()
-    
-    def __exit__(self, type, value, traceback):
-        DebugLog.pop()
-        assert(DebugLog.indentLvl == self.originalIndentLvl)
-
-
-class DebugLog:
-    """An indentation aware debug log stream"""
-
-    indentLvl = 0
-    enabled = False
-
-    def print(msg):
-        # skip debug messages if debug mode is not enabled!
-        if (not DebugLog.enabled):
-            return 
-
-        print("|  "*DebugLog.indentLvl + msg)
-
-    def push():
-        DebugLog.indentLvl += 1
-        return DebugLog.indentLvl
-
-    def scopedPush(msg = None):
-        return DebugLogScopedPush(msg)
-
-    def pop():
-        newIndentLvl = DebugLog.indentLvl - 1
-        # indentLvl can't become negative
-        if newIndentLvl < 0:
-            newIndentLvl = 0
-        
-        DebugLog.indentLvl = newIndentLvl
-        return DebugLog.indentLvl
-
+# By default register Debug-enabled exception handler
+# each cli-script should overrule this bases on the user supplied  '--debug'  cli flag
+sys.excepthook = ExceptionHandle(True).exception_handler
 
 
 class VsProject:
