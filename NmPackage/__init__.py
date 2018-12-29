@@ -121,15 +121,12 @@ def integrate_vsproject(vsProject: VsProject):
     text_node = group_node.appendChild(projDom.createElement("Text"))
     text_node.setAttribute("Include", target_file_path.name)
 
+    sanitize_text_nodes(projDom.documentElement)
 
     # write the updated project xml config to file
     with Path(vsProject.project_filepath).open( 'tw') as f:
         dom_str = projDom.toprettyxml(indent="  ", encoding="utf-8").decode()
         for line in dom_str.splitlines():
-            # skip empty lines
-            if not line.strip():
-                continue
-
             # space before closing node tag
             #  NOK: <name attr="value"/>
             #  OK : <name attr="value" />
@@ -137,6 +134,55 @@ def integrate_vsproject(vsProject: VsProject):
             line = line.replace('"/>', '" />')
 
             f.write(line + "\n")
+
+def sanitize_text_nodes(xml_element:minidom.Element):
+    """
+    remove empty xml text-nodes from complex element-nodes
+
+    a simple element node does not contain child nodes. I.e. its data is the text.
+    E.g. name is a simple node, "John Do" is its data
+    
+        <name>John Do</name>
+    
+    a complext element node is a container for child element nodes. 
+    I.e. its data is expressed by the child nodes and it should not have any text nodes of itself
+    e.g. name is a complex node consisting of two simple nodes first and last
+
+        <name><first>John</first><last>Do</last></name>
+
+    when pretty printing a dom then such text nodes will result in empty lines!
+    """
+    from xml.dom import Node
+    # from xml.dom.minidom import Element
+
+    assert xml_element.nodeType == Node.ELEMENT_NODE
+
+    
+    child_element_nodes = [c for c in xml_element.childNodes if c.nodeType == Node.ELEMENT_NODE]
+
+    # `xml_element` is a 'simple element', i.e. it has no child element nodes
+    # Any text nodes are to be left as is since they represent this 'simple elements' data
+    if not child_element_nodes:
+        # nothing to do
+        return 
+
+    # `xml_element` is a 'complext element`
+    assert len(child_element_nodes) > 0
+
+    # remove all empty text-nodes from this 'complex element'
+    text_nodes = [c for c in xml_element.childNodes if c.nodeType == Node.TEXT_NODE]
+    for t in text_nodes:
+        if t.data.strip() == "": 
+            xml_element.removeChild(t)
+            t.unlink()
+
+    # recursively clean child element nodes
+    for c in child_element_nodes:
+            sanitize_text_nodes(c)
+
+    
+
+
 
 def filehash(file):
     """compute file checksum"""
