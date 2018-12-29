@@ -140,3 +140,21 @@ class Test_Integrate:
             Integrate(p.absolute())
             
             compare_dirs(verifiedDir, Path(tmpdir))
+
+    def test_cli_call(self, tmpdir):
+        """
+        check that a directory containing a single *.vcxproj file can be integrated
+        """
+        self.setUp(tmpdir)
+        verifiedDir = self.testFilesVerified.absolute()
+        with chdir(Path(tmpdir) / Path("Vs2017Project")) as p:
+            # WHEN calling the cli main function with the debug option
+            import NmPackage.cli.integrate
+            sys.argv = ['arg0', '-d']
+            NmPackage.cli.integrate.main()
+
+            # THEN the result should match the baseline
+            compare_dirs(verifiedDir, Path(tmpdir))
+
+
+   
