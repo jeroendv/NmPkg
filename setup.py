@@ -10,7 +10,7 @@ setup(name='NmPackage',
       packages=['NmPackage'],
       entry_points = {
         'console_scripts': [
-            'NmPkg-integrate=NmPackage.integrate:main'],
+            'NmPkg-integrate=NmPackage.cli.integrate:main'],
         },
       include_package_data=True,
       zip_safe=False)
