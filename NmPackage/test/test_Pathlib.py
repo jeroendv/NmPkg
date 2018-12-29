@@ -22,11 +22,3 @@ def test_Pathlib_PureWindowsPath():
     p = p.parent
     assert r"$(NmPackageDir)" == str(p)
     assert "$(NmPackageDir)" == p.name
-
-
-
-
-# run this module though pytest if executed as a script
-if __name__ == '__main__':
-    import pytest
-    pytest.main([__file__])

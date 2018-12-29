@@ -140,9 +140,3 @@ class Test_Integrate:
             Integrate(p.absolute())
             
             compare_dirs(verifiedDir, Path(tmpdir))
-
-
-
-if __name__ == '__main__':
-    import pytest
-    pytest.main()
