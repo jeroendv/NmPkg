@@ -3,10 +3,6 @@ import os
 import sys
 from pathlib import PurePath
 from pathlib import Path
-import hashlib
-import binascii
-import shutil
-import traceback
 from NmPackage.debug import DebugLog
 from NmPackage.debug import ExceptionHandle
 
@@ -179,17 +175,6 @@ def sanitize_text_nodes(xml_element:minidom.Element):
     # recursively clean child element nodes
     for c in child_element_nodes:
             sanitize_text_nodes(c)
-
-    
-
-
-
-def filehash(file):
-    """compute file checksum"""
-    h = hashlib.sha256()
-    with open(file, 'rb') as f:
-        h.update(f.read())
-        return h.digest()
 
 
 class NmPackageId(object):
