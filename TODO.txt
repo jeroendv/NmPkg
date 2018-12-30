@@ -20,8 +20,9 @@ Why:
   * closer to the conan use-case making migration easier
 
 
+configure proper ctags support through Ctrl+t
 
-
-
-
-
+add save module doc. and/or rename module?! to ... 
+ * io module?
+     + it takes care or disk io, reading and writing files
+     - too generic! does not refer to the fact that it writing very specific
