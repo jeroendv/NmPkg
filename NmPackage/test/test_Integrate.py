@@ -146,6 +146,29 @@ class Test_Integrate:
             Integrate("non-existing_file.txt")
             
         assert "expected *.vcxproj file or dir containing a single *.vcxproj file" in str(e.value)
+
+
+    def test_fail_on_dir_without_project(self,tmpdir):
+
+        with chdir(str(tmpdir)):
+            with pytest.raises(Exception) as e:
+                Integrate(".")
+            
+            assert "no project files found in the given directory:" in str(e.value)
+
+    def test_fail_on_dir_with_multiple_projects(self,tmpdir):
+
+        with chdir(str(tmpdir)):
+            with Path("proj1.vcxproj").open("wt") as f:
+                f.write("")
+
+            with Path("proj2.vcxproj").open("wt") as f:
+                f.write("")
+
+            with pytest.raises(Exception) as e:
+                Integrate(".")
+            
+            assert "multiple project files found." in str(e.value)
         
 
 
