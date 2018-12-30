@@ -1,17 +1,15 @@
 import sys
 import traceback
 
-class ExceptionHandle:
+def exception_handler(exception_type, exception, tb):
     """custom Exception handler for this cli that suppresses the stack trace by default"""
+    # format python exception
+    sys.stderr.write("Error: " + str(exception_type.__name__) + " : " + str(exception))
+    sys.stderr.write("\n")
+    # print stack trace in debug mode only
+    if (DebugLog.enabled):
+        traceback.print_tb(tb)
 
-    def exception_handler(self, exception_type, exception, tb):
-        # format python exception
-        sys.stderr.write("Error: " + str(exception_type.__name__) + " : " + str(exception))
-        sys.stderr.write("\n")
-
-        # print stack trace in debug mode only
-        if (DebugLog.enabled):
-            traceback.print_tb(tb)
 
 class DebugLogScopedPush:
     def __init__(self, msg = None):

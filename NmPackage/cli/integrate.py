@@ -38,7 +38,7 @@ def parse_cli_args():
 
 def main():
     # register custom exception handler
-    sys.excepthook = ExceptionHandle()
+    sys.excepthook = exception_handler
 
     # parse cli input  
     args = parse_cli_args()
