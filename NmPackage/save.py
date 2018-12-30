@@ -8,7 +8,7 @@ def Integrate(path:Path):
 
     path can be the path to a *.vcxproj file or a directory containing only one *.vcxproj file
     """
-    vcxproj_filepath = find_vcxproj(path)
+    vcxproj_filepath = find_vcxproj(Path(path))
 
     integrate_vsproject(VsProject(vcxproj_filepath))
 
