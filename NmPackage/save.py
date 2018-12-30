@@ -39,7 +39,7 @@ def find_vcxproj(path:Path)->Path:
         else:
             assert len(vcxprojectFiles) > 1
             msg = "multiple project files found. specify single project on the command line."
-            msg += "\n" + "/n  * ".join(vcxprojectFiles)
+            msg += "\n" + "/n  * ".join([str(f) for f in vcxprojectFiles])
             raise Exception(msg)
 
     msg = "unknown argument: " + str(path) + "\n"
