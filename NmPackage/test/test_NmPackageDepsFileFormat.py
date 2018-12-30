@@ -140,6 +140,47 @@ def test_2_deserialization_order():
     assert  set([package_A_1, package_A_2]) == nmPackages
 
 
+def test_serialize_deserialize_0():
+    """test serialize and deserialize are each others invers"""
+    # GIVEN an empty set of packages
+    expected_NmPackageIds = set()
+
+    # WHEN serializing them to xml and deserialize them back
+    xml_serialization = NmPackageDepsFileFormat.serialize(expected_NmPackageIds)
+    nmPackageIds = NmPackageDepsFileFormat.deserialize(xml_serialization)
+
+    # THEN an empty set is again obtained
+    assert not nmPackageIds
+
+
+def test_serialize_deserialize_1():
+    """test serialize and deserialize are each others invers"""
+    # GIVEN an single package
+    expected_NmPackageIds = set([package_A_1])
+
+    # WHEN serializing them to xml and deserialize them back
+    xml_serialization = NmPackageDepsFileFormat.serialize(expected_NmPackageIds)
+    nmPackageIds = NmPackageDepsFileFormat.deserialize(xml_serialization)
+
+    # THEN the same package is again obtained
+    assert expected_NmPackageIds == nmPackageIds
+
+
+def test_serialize_deserialize_2():
+    """test serialize and deserialize are each others invers"""
+    # GIVEN an single package
+    expected_NmPackageIds = set([package_A_1, package_A_2])
+
+    # WHEN serializing them to xml and deserialize them back
+    xml_serialization = NmPackageDepsFileFormat.serialize(expected_NmPackageIds)
+    nmPackageIds = NmPackageDepsFileFormat.deserialize(xml_serialization)
+
+    # THEN the same set is again obtained
+    assert expected_NmPackageIds == nmPackageIds
+
+
+
+
 
 
 
