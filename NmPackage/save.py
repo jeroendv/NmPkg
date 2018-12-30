@@ -160,7 +160,7 @@ class NmPackageDepsFileFormat(object):
     (De)Serializing a set of `NmPackageId`'s from and to NmPackageDeps.props file format.
 
     The NmPackageDeps.props file format is an msbuild property sheet with the sole concern of importing
-    the property sheets of the NmPackages it depends on.
+    the property sheets of NmPackages.
     """
     __comment = r"""
 Nikon Metrology packages dependency listing

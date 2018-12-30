@@ -26,3 +26,7 @@ add save module doc. and/or rename module?! to ...
  * io module?
      + it takes care or disk io, reading and writing files
      - too generic! does not refer to the fact that it writing very specific
+     
+
+explain the bigger picture of NmPackageDepsFileFormat: vproject dependencies, package management, ...
+and refer to it in the class documentation
