@@ -1,4 +1,4 @@
-
+import pytest
 from pathlib import Path
 import os
 import shutil
@@ -140,6 +140,14 @@ class Test_Integrate:
             Integrate(p.absolute())
             
             compare_dirs(verifiedDir, Path(tmpdir))
+    
+    def test_fail_on_nonexisting_file(self):
+        with pytest.raises(Exception) as e:
+            Integrate("non-existing_file.txt")
+            
+        assert "expected *.vcxproj file or dir containing a single *.vcxproj file" in str(e.value)
+        
+
 
     def test_cli_call(self, tmpdir):
         """
