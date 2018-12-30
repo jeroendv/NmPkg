@@ -69,7 +69,7 @@ def integrate_vsproject(vsProject: VsProject):
         raise Exception("Intergration failure. The following file already exists:\n    "+str(target_file_path))
     
     with open(target_file_path, 'wt') as f:
-        f.write(VsProjectDependencySerialization.serialize())
+        f.write(NmPackageDepsFileFormat.serialize())
     
     # read the project xml file
     with Path(vsProject.project_filepath).open("rt") as f: 
@@ -155,9 +155,12 @@ def sanitize_text_nodes(xml_element:minidom.Element):
 
 
 
-class VsProjectDependencySerialization(object):
+class NmPackageDepsFileFormat(object):
     """
-    Serialize and deserialize a list of `NmPackageId`s to an MsBuild properties xml 
+    (De)Serializing a set of `NmPackageId`'s from and to NmPackageDeps.props file format.
+
+    The NmPackageDeps.props file format is an msbuild property sheet with the sole concern of importing
+    the property sheets of the NmPackages it depends on.
     """
     __comment = r"""
 Nikon Metrology packages dependency listing
@@ -184,7 +187,6 @@ the condition is needed to allow the project to be loaded if the package is not 
         """
         from xml.dom import minidom, Node
         dom = minidom.parseString(xml)
-        print(dom)
         nmPackageIds = set()
         for c in dom.documentElement.childNodes:
             
@@ -192,9 +194,13 @@ the condition is needed to allow the project to be loaded if the package is not 
                 # a comment node is expected and ignored
                 continue
             elif c.nodeType == Node.TEXT_NODE:
-                # TODO: what exactly are text nodes? this seems to be normal though!?
-                continue
-            
+                if c.data.strip() == "":
+                    # empty text nodes are harmless in the NmPackageDeps.props file format
+                    continue
+                else:
+                    raise Exeption("Unexpected text node under 'Project' root node.  (corrupted file?)")
+
+
             # all other child nodes should be "Import" elements
             # Bail-Out if any other nodetype is found!
             # I.e. encourage the user of the NmPkg tool to edit this file maximizing consistency
@@ -202,28 +208,33 @@ the condition is needed to allow the project to be loaded if the package is not 
             if c.nodeType != Node.ELEMENT_NODE:
                 raise Exception("unknown node: " + str(c))
             if c.tagName != "Import":
-                raise Exception("Node with unknown tag (expected 'Import' tag): " + c.tagName)
+                raise Exception("Node with unknown tag (expected 'Import' tag, corrupted file?): " + c.tagName)
 
             # attempt to deserialize the import_node
-            nmPackage = VsProjectDependencySerialization._deserializer_NmPackageId(c)
+            nmPackage = NmPackageDepsFileFormat._path_to_package(c.getAttribute("Project"))
             nmPackageIds.add(nmPackage)
 
-        return nmPackageIds
-
+        return nmPackageIds 
 
     @staticmethod
-    def _deserializer_NmPackageId(import_node) -> NmPackageId:
-        r"""
-        Desirializet an import xml element to an `NmPackageId`
-
-           <Import Project="$(NmPackageDir)\<packageId>\<versionId>\NmPackage.props" 
-                   Condition="exists('$(NmPackageDir)\<packageId>\<versionId>\NmPackage.props')" />
+    def _package_to_path(nmPackageId: NmPackageId) -> str:
         """
-        assert "Import" == import_node.tagName
+        Convert a NmPackageId to an xml 'project/import@project' value according the NmPackageDeps.props file format
+
+        See Also `_path_to_package` which does the reverse
+        """
+        return "$(NmPackageDir)\\" + nmPackageId.qualifiedId + "\\NmPackage.props"
+
+    @staticmethod
+    def _path_to_package(path : str) -> NmPackageId:
+        """
+        Convert an xml 'project/import@project' value to a NmPackageId according the NmPackageDeps.props file format
+
+        See Also `_package_to_path` which does the reverse
+        """
         from pathlib import PureWindowsPath
-        package_path = PureWindowsPath(import_node.getAttribute("Project"))
-        
-        # break path into parts
+        package_path = PureWindowsPath(path)
+        # the package path is essentially a path so lets break it into parts to process it
         propsFile = package_path.name
         versionId = package_path.parent.name
         packageId = package_path.parent.parent.name
@@ -233,21 +244,19 @@ the condition is needed to allow the project to be loaded if the package is not 
         nmPackageId  = NmPackageId(packageId, versionId)
 
         # check that all whole path was parsed
-        parsed_package_path = "$(NmPackageDir)\\" + str(PureWindowsPath(nmPackageId.property_path))
-        if parsed_package_path != str(package_path):
-            raise Exception(r"""Path has wrong format:
-expected: $(NmPackageDir)\<packageId>\<versionId>\NmPackage.props
-actual  : {}
-parsed  : {}""".format(
-            str(package_path), parsed_package_path))
+        parsed_package_path = NmPackageDepsFileFormat._package_to_path(nmPackageId)
+        if parsed_package_path != path:
+            raise Exception(r"""Failed to parse Project/Import@Project
+expected format : $(NmPackageDir)\<packageId>\<versionId>\NmPackage.props
+actual value    : {}
+""".format(str(package_path)))
 
         return nmPackageId
-
 
     @staticmethod
     def serialize(packages: set = set()) -> str:
         """
-        Serialize a set of `NmPackageId`s to a '<ProjectName>.NmPackageDeps.props` xml stream
+        Serialize a set of `NmPackageId`s according the NmPackageDeps.props file format
         """
         # create xml document
         from xml.dom import minidom
@@ -257,17 +266,17 @@ parsed  : {}""".format(
         dom.documentElement.setAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003")
 
         # add comment node
-        dom.documentElement.appendChild(dom.createComment(VsProjectDependencySerialization.__comment))
+        dom.documentElement.appendChild(dom.createComment(NmPackageDepsFileFormat.__comment))
 
         # sort packages alphabetically
         # this will make it eaiser for humans to find a package
         # it also ensures that if a non-empty VCS diff is an actual change and not just a reordering
-        path_as_key = lambda nmPackageId: str(nmPackageId.property_path)
-        sorted_packages = sorted(packages, key=path_as_key )     
+        sort_by_qualifiedId = lambda nmPackageId: nmPackageId.qualifiedId
+        sorted_packages = sorted(packages, key=sort_by_qualifiedId)     
 
         # add Import nodes to dom
-        for e in sorted_packages:
-            package_path = "$(NmPackageDir)\\" + str(PureWindowsPath(e.property_path))
+        for p in sorted_packages:
+            package_path = NmPackageDepsFileFormat._package_to_path(p)
             import_node = dom.documentElement.appendChild(dom.createElement("Import"))
             import_node.setAttribute("Project", package_path)
             import_node.setAttribute("Condition", "Exists('{}')".format(package_path))

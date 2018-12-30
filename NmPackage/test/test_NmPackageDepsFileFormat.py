@@ -1,11 +1,11 @@
 """
-Unit test for `VsProjectDependencySerialization`
+Unit test for `NmPackageDepsFileFormat`
 """
 
 import pytest
 import unittest
 from NmPackage import NmPackageId
-from NmPackage.save import VsProjectDependencySerialization
+from NmPackage.save import NmPackageDepsFileFormat
 
 
 package_A_1 = NmPackageId("packageA", "1")
@@ -81,7 +81,7 @@ def test_empty_serialization():
     # GIVEN nothing
 
     # WHEN serializing noting
-    xml_out = VsProjectDependencySerialization.serialize()
+    xml_out = NmPackageDepsFileFormat.serialize()
 
     # THEN the output is the empty <projectName>.NmPackageDeps.props template
     assert xml_0_deps == xml_out
@@ -90,7 +90,7 @@ def test_1_serialization():
     # GIVEN a single package
 
     # WHEN serializing that package
-    xml_out = VsProjectDependencySerialization.serialize([package_A_2])
+    xml_out = NmPackageDepsFileFormat.serialize([package_A_2])
 
     # THEN the output should match the expected output
     assert xml_1_deps == xml_out
@@ -100,8 +100,8 @@ def test_2_serialization_order():
     # GIVEN two packages
 
     # WHEN serializing those packages passing them in different order
-    xml_out1 = VsProjectDependencySerialization.serialize([package_A_2, package_A_1])
-    xml_out2 = VsProjectDependencySerialization.serialize([package_A_1, package_A_2])
+    xml_out1 = NmPackageDepsFileFormat.serialize([package_A_2, package_A_1])
+    xml_out2 = NmPackageDepsFileFormat.serialize([package_A_1, package_A_2])
 
     # THEN the output is ordered (alphabetically) so the outpt is the same
     assert xml_2_deps == xml_out1
@@ -113,7 +113,7 @@ def test_empty_deserialization():
     xml_in = xml_0_deps
 
     # WHEN deserializing 
-    nmPackages = VsProjectDependencySerialization.deserialize(xml_in)
+    nmPackages = NmPackageDepsFileFormat.deserialize(xml_in)
 
     # THEN an empty set is returned
     assert  not nmPackages
@@ -123,7 +123,7 @@ def test_1_deserialization():
     xml_in = xml_1_deps
 
     # WHEN deserializing 
-    nmPackages = VsProjectDependencySerialization.deserialize(xml_in)
+    nmPackages = NmPackageDepsFileFormat.deserialize(xml_in)
 
     # THEN a set with a single package is returned
     assert  set([package_A_2]) == nmPackages
@@ -134,7 +134,7 @@ def test_2_deserialization_order():
     xml_in = xml_2_deps
 
     # WHEN deserializing 
-    nmPackages = VsProjectDependencySerialization.deserialize(xml_in)
+    nmPackages = NmPackageDepsFileFormat.deserialize(xml_in)
 
     # THEN a set with a the two package is returned
     assert  set([package_A_1, package_A_2]) == nmPackages

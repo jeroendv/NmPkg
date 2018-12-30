@@ -52,17 +52,14 @@ class NmPackageId(object):
     @property
     def packageId(self) -> str :
         return self._packageId
-
     @property
     def versionId(self) -> str : 
         return self._versionId
 
     @property
-    def property_path(self) -> PurePath:
-        """
-        path to the package properties file
-        """
-        return PurePath(self.packageId) / PurePath(self.versionId) / PurePath("NmPackage.props")
+    def qualifiedId(self) -> str:
+        return self.packageId + "\\" +  self.versionId
+
     
     def __repr__(self) -> str:
         return "NmPackageId({}, {})".format(self.packageId, self.versionId)
@@ -72,5 +69,5 @@ class NmPackageId(object):
                self.versionId == other.versionId
     
     def __hash__(self):
-        return hash(str(self.property_path))
+        return hash(self.qualifiedId)
 
