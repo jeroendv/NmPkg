@@ -45,6 +45,9 @@ class VsProject:
         """project name is the project file name without extension"""
         return self._vcxproj_file.stem
 
+    def get_dependencies(self) -> set:
+        return self._NmPackageSet
+
 
 class NmPackageId(object):
     """
