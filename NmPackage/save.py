@@ -25,6 +25,21 @@ class VsProjectFiler(object):
         with Path(propsfile).open("tw+") as f:
             f.write(NmPackageDepsFileFormat.serialize(vsProject.dependencies))
 
+    def deserialize(self, vcxproject_filepath: Path):
+        # create project file
+        vcxproject_file = VcxProjectFile(vcxproject_filepath)
+        # check if there are any package dependencies
+        if not vcxproject_file.nmPackageDeps_path.is_file():
+            return VsProject(vcxproject_filepath)
+
+        # read package dependencies
+        with vcxproject_file.nmPackageDeps_path.open("tr") as f:
+            nmPackageIds = NmPackageDepsFileFormat.deserialize(f.read())
+            vsProject = VsProject(vcxproject_filepath)
+            vsProject.get_dependencies().update(nmPackageIds)
+
+            return vsProject
+
 
 def Integrate(path: Path):
     """
@@ -77,6 +92,12 @@ class VcxProjectFile(object):
     def path(self) -> Path:
         return self._path
 
+    @property
+    def nmPackageDeps_path(self):
+        dir = self.path.parent
+        projectName = self.path.stem
+        return dir / Path(projectName + ".NmPackageDeps.props")
+
     def __init__(self, vcxproject_file_path: Path):
         """
         Create object given the path to an *.vcxproj file
@@ -126,16 +147,15 @@ class VcxProjectFile(object):
         to the project file
         """
         # check if the file is not already imported
-        file_path = self.path.stem + ".NmPackageDeps.props"
         for e in projDom.getElementsByTagName("Import"):
-            if e.getAttribute("Project") == file_path:
+            if e.getAttribute("Project") == self.nmPackageDeps_path.name:
                 # already imported, nothign to do!
                 return
 
         # not yet imported add import element
         import_node = projDom.documentElement.appendChild(
             projDom.createElement("Import"))
-        import_node.setAttribute("Project", file_path)
+        import_node.setAttribute("Project", self.nmPackageDeps_path.name)
 
     def _include_NmPackgeDeps(self, projDom: minidom.Document):
         """
@@ -147,9 +167,8 @@ class VcxProjectFile(object):
         to the project file
         """
         # check if the file is already included
-        file_path = self.path.stem + ".NmPackageDeps.props"
         for e in projDom.getElementsByTagName("Text"):
-            if e.getAttribute("Include") == file_path \
+            if e.getAttribute("Include") == self.nmPackageDeps_path.name \
                and e.parentNode.tagName == "ItemGroup":
                 # already imported, nothing to do!
                 return
@@ -157,7 +176,7 @@ class VcxProjectFile(object):
         group_node = projDom.documentElement.appendChild(
             projDom.createElement("ItemGroup"))
         text_node = group_node.appendChild(projDom.createElement("Text"))
-        text_node.setAttribute("Include", file_path)
+        text_node.setAttribute("Include", self.nmPackageDeps_path.name)
 
 
 def sanitize_text_nodes(xml_element: minidom.Element):
