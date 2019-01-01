@@ -31,8 +31,13 @@ class VsProject:
         self._NmPackageSet = set()
 
     @property
+    def dependencies(self) -> set:
+        """The set of `NmPacakgeId` dependencies of this project"""
+        return self._NmPackageSet
+
+    @property
     def project_filepath(self) -> PurePath:
-        """the *.vcxproj file path """
+        """the *.vcxproj file path"""
         return self._vcxproj_file
 
     @property
