@@ -66,7 +66,7 @@ def integrate_vsproject(vsProject: VsProject):
         Path(vsProject.projectName + ".NmPackageDeps.props")
     if Path(target_file_path).exists():
         raise Exception(
-            "Intergration failure. The following file already exists:\n    "+str(target_file_path))
+            "Intergration failure. The following file already exists:\n    " + str(target_file_path))
 
     with open(target_file_path, 'wt') as f:
         f.write(NmPackageDepsFileFormat.serialize())
@@ -118,7 +118,7 @@ def sanitize_text_nodes(xml_element: minidom.Element):
 
         <name>John Do</name>
 
-    a complext element node is a container for child element nodes. 
+    a complext element node is a container for child element nodes.
     I.e. its data is expressed by the child nodes and it should not have any text nodes of itself
     e.g. name is a complex node consisting of two simple nodes first and last
 
@@ -281,8 +281,7 @@ the condition is needed to allow the project to be loaded if the package is not 
         # sort packages alphabetically
         # this will make it eaiser for humans to find a package
         # it also ensures that if a non-empty VCS diff is an actual change and not just a reordering
-        def sort_by_qualifiedId(nmPackageId): return nmPackageId.qualifiedId
-        sorted_packages = sorted(packages, key=sort_by_qualifiedId)
+        sorted_packages = sorted(packages, key=lambda nmPackageId: nmPackageId.qualifiedId)
 
         # add Import nodes to dom
         for p in sorted_packages:

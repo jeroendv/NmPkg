@@ -39,7 +39,7 @@ class DebugLog:
     def print(msg):
         # skip debug messages if debug mode is not enabled!
         if DebugLog.enabled:
-            print("|  "*DebugLog.indentLvl + msg, flush=True)
+            print("|  " * DebugLog.indentLvl + msg, flush=True)
 
     @staticmethod
     def push():

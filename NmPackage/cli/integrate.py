@@ -10,20 +10,20 @@ import sys
 
 def parse_cli_args():
     """parse the script input arguments"""
-    parser = argparse.ArgumentParser(description = "Conan integration for Visual studio MSBuild")
-                   
+    parser = argparse.ArgumentParser(description="Conan integration for Visual studio MSBuild")
+
     parser.add_argument("-v", "--verbose",
-                    help="increase output verbosity",
-                    action="store_true")
+                        help="increase output verbosity",
+                        action="store_true")
 
     parser.add_argument("-d", "--debug",
-                    help="enable debug output",
-                    action="store_true")
+                        help="enable debug output",
+                        action="store_true")
 
     parser.add_argument("path",
-                    help="path to the folder containing a single *.vcxproj file or a specific *.vcxproj file",
-                    nargs='?',
-                    default="./")
+                        help="path to the folder containing a single *.vcxproj file or a specific *.vcxproj file",
+                        nargs='?',
+                        default="./")
 
     parser.add_argument("-N", "--dry-run",
                         help="Do not perform any actions, only simulate them.",
@@ -36,22 +36,16 @@ def parse_cli_args():
 
     return args
 
+
 def main():
     # register custom exception handler
     sys.excepthook = exception_handler
 
-    # parse cli input  
+    # parse cli input
     args = parse_cli_args()
 
     # set debug log state
     DebugLog.enabled = args.debug
-    
-    # call 
+
+    # call
     Integrate(Path(args.path))
-        
-
-
-
-
-
-
