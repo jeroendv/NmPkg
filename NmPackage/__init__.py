@@ -16,21 +16,23 @@ And the NmPackage.save module to save a 'VsProject' to disk thus modifying
 from pathlib import PurePath
 from NmPackage.debug import DebugLog
 
+
 class VsProject:
     """
     Representation of a a Visual Studio project and its package dependencies
-    
+
     identified by:
       * a *.vcxproj file
       * and a set of `NmPackageId`'s
     """
-    def __init__(self, vcxproj_file:PurePath):
+
+    def __init__(self, vcxproj_file: PurePath):
         self._vcxproj_file = PurePath(vcxproj_file)
         self._NmPackageSet = set()
 
     @property
     def project_filepath(self) -> PurePath:
-        """the *.vcxproj file path """        
+        """the *.vcxproj file path """
         return self._vcxproj_file
 
     @property
@@ -39,34 +41,33 @@ class VsProject:
         return self._vcxproj_file.stem
 
 
-
 class NmPackageId(object):
     """
     A Nikon Metrology Package Identifier (NmPackage for short) is identified by <packageId> and a <versionId>
     """
-    def __init__(self, packageId:str, versionId:str):
+
+    def __init__(self, packageId: str, versionId: str):
         self._packageId = packageId
         self._versionId = versionId
 
     @property
-    def packageId(self) -> str :
+    def packageId(self) -> str:
         return self._packageId
+
     @property
-    def versionId(self) -> str : 
+    def versionId(self) -> str:
         return self._versionId
 
     @property
     def qualifiedId(self) -> str:
-        return self.packageId + "\\" +  self.versionId
+        return self.packageId + "\\" + self.versionId
 
-    
     def __repr__(self) -> str:
         return "NmPackageId({}, {})".format(self.packageId, self.versionId)
 
     def __eq__(self, other) -> bool:
         return self.packageId == other.packageId and \
-               self.versionId == other.versionId
-    
+            self.versionId == other.versionId
+
     def __hash__(self):
         return hash(self.qualifiedId)
-

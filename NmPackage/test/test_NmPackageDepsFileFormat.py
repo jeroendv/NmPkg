@@ -77,6 +77,7 @@ the condition is needed to allow the project to be loaded if the package is not 
 </Project>
 """
 
+
 def test_empty_serialization():
     # GIVEN nothing
 
@@ -85,6 +86,7 @@ def test_empty_serialization():
 
     # THEN the output is the empty <projectName>.NmPackageDeps.props template
     assert xml_0_deps == xml_out
+
 
 def test_1_serialization():
     # GIVEN a single package
@@ -112,32 +114,33 @@ def test_empty_deserialization():
     # GIVEN an empty props file
     xml_in = xml_0_deps
 
-    # WHEN deserializing 
+    # WHEN deserializing
     nmPackages = NmPackageDepsFileFormat.deserialize(xml_in)
 
     # THEN an empty set is returned
-    assert  not nmPackages
+    assert not nmPackages
+
 
 def test_1_deserialization():
     # GIVEN a props file with a single dependency
     xml_in = xml_1_deps
 
-    # WHEN deserializing 
+    # WHEN deserializing
     nmPackages = NmPackageDepsFileFormat.deserialize(xml_in)
 
     # THEN a set with a single package is returned
-    assert  set([package_A_2]) == nmPackages
+    assert set([package_A_2]) == nmPackages
 
 
 def test_2_deserialization_order():
     # GIVEN a props file with a two dependency
     xml_in = xml_2_deps
 
-    # WHEN deserializing 
+    # WHEN deserializing
     nmPackages = NmPackageDepsFileFormat.deserialize(xml_in)
 
     # THEN a set with a the two package is returned
-    assert  set([package_A_1, package_A_2]) == nmPackages
+    assert set([package_A_1, package_A_2]) == nmPackages
 
 
 def test_serialize_deserialize_0():
@@ -146,7 +149,8 @@ def test_serialize_deserialize_0():
     expected_NmPackageIds = set()
 
     # WHEN serializing them to xml and deserialize them back
-    xml_serialization = NmPackageDepsFileFormat.serialize(expected_NmPackageIds)
+    xml_serialization = NmPackageDepsFileFormat.serialize(
+        expected_NmPackageIds)
     nmPackageIds = NmPackageDepsFileFormat.deserialize(xml_serialization)
 
     # THEN an empty set is again obtained
@@ -159,7 +163,8 @@ def test_serialize_deserialize_1():
     expected_NmPackageIds = set([package_A_1])
 
     # WHEN serializing them to xml and deserialize them back
-    xml_serialization = NmPackageDepsFileFormat.serialize(expected_NmPackageIds)
+    xml_serialization = NmPackageDepsFileFormat.serialize(
+        expected_NmPackageIds)
     nmPackageIds = NmPackageDepsFileFormat.deserialize(xml_serialization)
 
     # THEN the same package is again obtained
@@ -172,16 +177,9 @@ def test_serialize_deserialize_2():
     expected_NmPackageIds = set([package_A_1, package_A_2])
 
     # WHEN serializing them to xml and deserialize them back
-    xml_serialization = NmPackageDepsFileFormat.serialize(expected_NmPackageIds)
+    xml_serialization = NmPackageDepsFileFormat.serialize(
+        expected_NmPackageIds)
     nmPackageIds = NmPackageDepsFileFormat.deserialize(xml_serialization)
 
     # THEN the same set is again obtained
     assert expected_NmPackageIds == nmPackageIds
-
-
-
-
-
-
-
-

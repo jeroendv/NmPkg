@@ -1,8 +1,10 @@
+from xml.dom import minidom
 from NmPackage import *
 from pathlib import Path
 from pathlib import PureWindowsPath
 
-def Integrate(path:Path):
+
+def Integrate(path: Path):
     """
     Integrate '<projectName.>NmPackageDeps.props' into an '*.vcxproj' file
 
@@ -12,9 +14,8 @@ def Integrate(path:Path):
 
     integrate_vsproject(VsProject(vcxproj_filepath))
 
-    
-    
-def find_vcxproj(path:Path)->Path:
+
+def find_vcxproj(path: Path)->Path:
     """
     *.vcxproj resolution:
         * if path is a *.vcxrpoj file then return it.
@@ -23,10 +24,10 @@ def find_vcxproj(path:Path)->Path:
     """
     if path.is_file():
         if not path.match("*.vcxproj"):
-            raise Exception("file is not a *.vcxproj file: "+ str(path))
+            raise Exception("file is not a *.vcxproj file: " + str(path))
 
         return path
-    
+
     if path.is_dir():
         vcxprojectFiles = list(path.glob("*.vcxproj"))
 
@@ -47,41 +48,40 @@ def find_vcxproj(path:Path)->Path:
     raise Exception(msg)
 
 
-
-from xml.dom import minidom
 def integrate_vsproject(vsProject: VsProject):
     """
     Integrate '<projectName>.NmPackageDeps.props' into an `VsProject`
 
     create <projectName>.NmPackageDeps.props
     integrate into *.vcxproj file
-    
+
     fail if  <projectName>.NmPackageDeps.props already exists
     """
     assert(Path(vsProject.project_filepath).exists())
 
     packageDir = Path(__file__).parent
 
-
     # generate empty '<projectName>.NmPackageDeps.props' file
-    target_file_path = vsProject.project_filepath.parent / Path(vsProject.projectName + ".NmPackageDeps.props")
+    target_file_path = vsProject.project_filepath.parent / \
+        Path(vsProject.projectName + ".NmPackageDeps.props")
     if Path(target_file_path).exists():
-        raise Exception("Intergration failure. The following file already exists:\n    "+str(target_file_path))
-    
+        raise Exception(
+            "Intergration failure. The following file already exists:\n    "+str(target_file_path))
+
     with open(target_file_path, 'wt') as f:
         f.write(NmPackageDepsFileFormat.serialize())
-    
+
     # read the project xml file
-    with Path(vsProject.project_filepath).open("rt") as f: 
+    with Path(vsProject.project_filepath).open("rt") as f:
         projDom = minidom.parse(f)
 
     # integrate the XXX.NmPackageDeps.props file into the project
-    # i.e. add 
+    # i.e. add
     #       <Import Project="XXX.NmPackageDeps.props" />
     # to the project file
-    import_node = projDom.documentElement.appendChild(projDom.createElement("Import"))
+    import_node = projDom.documentElement.appendChild(
+        projDom.createElement("Import"))
     import_node.setAttribute("Project", target_file_path.name)
-
 
     # include the XXX.NmPackageDeps.props in the project file
     # i.e. add
@@ -89,33 +89,35 @@ def integrate_vsproject(vsProject: VsProject):
     #         <Text Include="XXX.NmPackageDeps.props" />
     #       </ItemGroup>
     # to the project file
-    group_node = projDom.documentElement.appendChild(projDom.createElement("ItemGroup"))
+    group_node = projDom.documentElement.appendChild(
+        projDom.createElement("ItemGroup"))
     text_node = group_node.appendChild(projDom.createElement("Text"))
     text_node.setAttribute("Include", target_file_path.name)
 
     sanitize_text_nodes(projDom.documentElement)
 
     # write the updated project xml config to file
-    with Path(vsProject.project_filepath).open( 'tw') as f:
+    with Path(vsProject.project_filepath).open('tw') as f:
         dom_str = projDom.toprettyxml(indent="  ", encoding="utf-8").decode()
         for line in dom_str.splitlines():
             # space before closing node tag
             #  NOK: <name attr="value"/>
             #  OK : <name attr="value" />
-            # this appears to be the visual studio way                       
+            # this appears to be the visual studio way
             line = line.replace('"/>', '" />')
 
             f.write(line + "\n")
 
-def sanitize_text_nodes(xml_element:minidom.Element):
+
+def sanitize_text_nodes(xml_element: minidom.Element):
     """
     remove empty xml text-nodes from complex element-nodes
 
     a simple element node does not contain child nodes. I.e. its data is the text.
     E.g. name is a simple node, "John Do" is its data
-    
+
         <name>John Do</name>
-    
+
     a complext element node is a container for child element nodes. 
     I.e. its data is expressed by the child nodes and it should not have any text nodes of itself
     e.g. name is a complex node consisting of two simple nodes first and last
@@ -129,30 +131,29 @@ def sanitize_text_nodes(xml_element:minidom.Element):
 
     assert xml_element.nodeType == Node.ELEMENT_NODE
 
-    
-    child_element_nodes = [c for c in xml_element.childNodes if c.nodeType == Node.ELEMENT_NODE]
+    child_element_nodes = [
+        c for c in xml_element.childNodes if c.nodeType == Node.ELEMENT_NODE]
 
     # `xml_element` is a 'simple element', i.e. it has no child element nodes
     # Any text nodes are to be left as is since they represent this 'simple elements' data
     if not child_element_nodes:
         # nothing to do
-        return 
+        return
 
     # `xml_element` is a 'complext element`
     assert len(child_element_nodes) > 0
 
     # remove all empty text-nodes from this 'complex element'
-    text_nodes = [c for c in xml_element.childNodes if c.nodeType == Node.TEXT_NODE]
+    text_nodes = [
+        c for c in xml_element.childNodes if c.nodeType == Node.TEXT_NODE]
     for t in text_nodes:
-        if t.data.strip() == "": 
+        if t.data.strip() == "":
             xml_element.removeChild(t)
             t.unlink()
 
     # recursively clean child element nodes
     for c in child_element_nodes:
-            sanitize_text_nodes(c)
-
-
+        sanitize_text_nodes(c)
 
 
 class NmPackageDepsFileFormat(object):
@@ -178,8 +179,9 @@ A dependency  on 'packageId' is expressed as follows.
 
 the condition is needed to allow the project to be loaded if the package is not yet present on the disk
 """
+
     @staticmethod
-    def deserialize( xml : str) -> set:
+    def deserialize(xml: str) -> set:
         """
         parse a '<projectName>.NmPacakageDeps.props' xml stream adn return the set of `NmPackageId`s
         TODO: generalize to use IO streams to make it easy to unit test (read from in-mem string stream instead of a file)
@@ -189,7 +191,7 @@ the condition is needed to allow the project to be loaded if the package is not 
         dom = minidom.parseString(xml)
         nmPackageIds = set()
         for c in dom.documentElement.childNodes:
-            
+
             if c.nodeType == Node.COMMENT_NODE:
                 # a comment node is expected and ignored
                 continue
@@ -198,8 +200,8 @@ the condition is needed to allow the project to be loaded if the package is not 
                     # empty text nodes are harmless in the NmPackageDeps.props file format
                     continue
                 else:
-                    raise Exeption("Unexpected text node under 'Project' root node.  (corrupted file?)")
-
+                    raise Exeption(
+                        "Unexpected text node under 'Project' root node.  (corrupted file?)")
 
             # all other child nodes should be "Import" elements
             # Bail-Out if any other nodetype is found!
@@ -208,13 +210,15 @@ the condition is needed to allow the project to be loaded if the package is not 
             if c.nodeType != Node.ELEMENT_NODE:
                 raise Exception("unknown node: " + str(c))
             if c.tagName != "Import":
-                raise Exception("Node with unknown tag (expected 'Import' tag, corrupted file?): " + c.tagName)
+                raise Exception(
+                    "Node with unknown tag (expected 'Import' tag, corrupted file?): " + c.tagName)
 
             # attempt to deserialize the import_node
-            nmPackage = NmPackageDepsFileFormat._path_to_package(c.getAttribute("Project"))
+            nmPackage = NmPackageDepsFileFormat._path_to_package(
+                c.getAttribute("Project"))
             nmPackageIds.add(nmPackage)
 
-        return nmPackageIds 
+        return nmPackageIds
 
     @staticmethod
     def _package_to_path(nmPackageId: NmPackageId) -> str:
@@ -223,14 +227,14 @@ the condition is needed to allow the project to be loaded if the package is not 
 
         See Also `_path_to_package` which does the reverse
         """
-        package_path =  PureWindowsPath("$(NmPackageDir)").joinpath(
-                        PureWindowsPath(nmPackageId.packageId)).joinpath(
-                        PureWindowsPath(nmPackageId.versionId)).joinpath(
-                        PureWindowsPath("NmPackage.props"))
+        package_path = PureWindowsPath("$(NmPackageDir)").joinpath(
+            PureWindowsPath(nmPackageId.packageId)).joinpath(
+            PureWindowsPath(nmPackageId.versionId)).joinpath(
+            PureWindowsPath("NmPackage.props"))
         return str(package_path)
 
     @staticmethod
-    def _path_to_package(path : str) -> NmPackageId:
+    def _path_to_package(path: str) -> NmPackageId:
         """
         Convert an xml 'project/import@project' value to a NmPackageId according the NmPackageDeps.props file format
 
@@ -246,11 +250,12 @@ the condition is needed to allow the project to be loaded if the package is not 
         PackageDir = windows_path.parent.parent.parent.name
 
         # create NmPackageId
-        nmPackageId  = NmPackageId(packageId, versionId)
+        nmPackageId = NmPackageId(packageId, versionId)
 
         # check that all whole path was parsed
         # by verifying that the parsed paths is identical to the input path
-        parsed_package_path = NmPackageDepsFileFormat._package_to_path(nmPackageId)
+        parsed_package_path = NmPackageDepsFileFormat._package_to_path(
+            nmPackageId)
         if parsed_package_path != path:
             raise Exception("Failed to parse Project/Import@Project: " + path)
 
@@ -263,27 +268,30 @@ the condition is needed to allow the project to be loaded if the package is not 
         """
         # create xml document
         from xml.dom import minidom
-        dom = minidom.getDOMImplementation().createDocument(None, "Project", None)        
+        dom = minidom.getDOMImplementation().createDocument(None, "Project", None)
         dom.documentElement.setAttribute("DefaultTargets", "Build")
         dom.documentElement.setAttribute("ToolsVersion", "4.0")
-        dom.documentElement.setAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003")
+        dom.documentElement.setAttribute(
+            "xmlns", "http://schemas.microsoft.com/developer/msbuild/2003")
 
         # add comment node
-        dom.documentElement.appendChild(dom.createComment(NmPackageDepsFileFormat.__comment))
+        dom.documentElement.appendChild(
+            dom.createComment(NmPackageDepsFileFormat.__comment))
 
         # sort packages alphabetically
         # this will make it eaiser for humans to find a package
         # it also ensures that if a non-empty VCS diff is an actual change and not just a reordering
-        sort_by_qualifiedId = lambda nmPackageId: nmPackageId.qualifiedId
-        sorted_packages = sorted(packages, key=sort_by_qualifiedId)     
+        def sort_by_qualifiedId(nmPackageId): return nmPackageId.qualifiedId
+        sorted_packages = sorted(packages, key=sort_by_qualifiedId)
 
         # add Import nodes to dom
         for p in sorted_packages:
             package_path = NmPackageDepsFileFormat._package_to_path(p)
-            import_node = dom.documentElement.appendChild(dom.createElement("Import"))
+            import_node = dom.documentElement.appendChild(
+                dom.createElement("Import"))
             import_node.setAttribute("Project", package_path)
-            import_node.setAttribute("Condition", "Exists('{}')".format(package_path))
+            import_node.setAttribute(
+                "Condition", "Exists('{}')".format(package_path))
 
         # pretty print
         return dom.toprettyxml(indent="  ", encoding="utf-8").decode()
-
