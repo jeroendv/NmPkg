@@ -223,7 +223,11 @@ the condition is needed to allow the project to be loaded if the package is not 
 
         See Also `_path_to_package` which does the reverse
         """
-        return "$(NmPackageDir)\\" + nmPackageId.qualifiedId + "\\NmPackage.props"
+        package_path =  PureWindowsPath("$(NmPackageDir)").joinpath(
+                        PureWindowsPath(nmPackageId.packageId)).joinpath(
+                        PureWindowsPath(nmPackageId.versionId)).joinpath(
+                        PureWindowsPath("NmPackage.props"))
+        return str(package_path)
 
     @staticmethod
     def _path_to_package(path : str) -> NmPackageId:
@@ -233,23 +237,22 @@ the condition is needed to allow the project to be loaded if the package is not 
         See Also `_package_to_path` which does the reverse
         """
         from pathlib import PureWindowsPath
-        package_path = PureWindowsPath(path)
-        # the package path is essentially a path so lets break it into parts to process it
-        propsFile = package_path.name
-        versionId = package_path.parent.name
-        packageId = package_path.parent.parent.name
-        PackageDir = package_path.parent.parent.parent.name
+        windows_path = PureWindowsPath(path)
+
+        # the package path is essentially a windows path so lets break it into its 4 parts to process it
+        propsFile = windows_path.name
+        versionId = windows_path.parent.name
+        packageId = windows_path.parent.parent.name
+        PackageDir = windows_path.parent.parent.parent.name
 
         # create NmPackageId
         nmPackageId  = NmPackageId(packageId, versionId)
 
         # check that all whole path was parsed
+        # by verifying that the parsed paths is identical to the input path
         parsed_package_path = NmPackageDepsFileFormat._package_to_path(nmPackageId)
         if parsed_package_path != path:
-            raise Exception(r"""Failed to parse Project/Import@Project
-expected format : $(NmPackageDir)\<packageId>\<versionId>\NmPackage.props
-actual value    : {}
-""".format(str(package_path)))
+            raise Exception("Failed to parse Project/Import@Project: " + path)
 
         return nmPackageId
 
