@@ -55,6 +55,14 @@ class NmPackageId(object):
         self._packageId = packageId
         self._versionId = versionId
 
+    @staticmethod
+    def from_qualifiedId(qualifiedId: str):
+        parts = qualifiedId.split("/")
+        if len(parts) != 2:
+            raise Exception("Invalid qualified package id: " + qualifiedId)
+
+        return NmPackageId(parts[0], parts[1])
+
     @property
     def packageId(self) -> str:
         return self._packageId
@@ -65,7 +73,7 @@ class NmPackageId(object):
 
     @property
     def qualifiedId(self) -> str:
-        return self.packageId + "\\" + self.versionId
+        return self.packageId + "/" + self.versionId
 
     def __repr__(self) -> str:
         return 'NmPackageId("{}", "{}")'.format(self.packageId, self.versionId)

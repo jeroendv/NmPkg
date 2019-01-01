@@ -8,7 +8,7 @@ def test_getters():
     # THEN verify the various getters
     assert "A" == p.packageId
     assert "1" == p.versionId
-    assert r"A\1" == p.qualifiedId
+    assert "A/1" == p.qualifiedId
     assert 'NmPackageId("A", "1")' == repr(p)
 
 
