@@ -63,7 +63,7 @@ class NmPackageId(object):
         return self.packageId + "\\" + self.versionId
 
     def __repr__(self) -> str:
-        return "NmPackageId({}, {})".format(self.packageId, self.versionId)
+        return 'NmPackageId("{}", "{}")'.format(self.packageId, self.versionId)
 
     def __eq__(self, other) -> bool:
         return self.packageId == other.packageId and \

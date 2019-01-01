@@ -47,10 +47,6 @@ class DebugLog:
         return DebugLog.indentLvl
 
     @staticmethod
-    def scopedPush(msg=None):
-        return DebugLogScopedPush(msg)
-
-    @staticmethod
     def pop():
         newIndentLvl = DebugLog.indentLvl - 1
 
