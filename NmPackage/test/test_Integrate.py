@@ -54,31 +54,29 @@ class Test_Integrate:
         root = projTree.getroot()
         ns = {'default': 'http://schemas.microsoft.com/developer/msbuild/2003'}
 
+        found = False
         for c in root.findall("default:Import", ns):
             print(c.tag, c.attrib)
             if ('Project' in c.attrib 
                 and c.get('Project') == 'Vs2017Project.NmPackageDeps.props'):
                 # node found :-)
-                return
+                found = True
     
-        assert False, "no import node found that imports Vs2017Project.NmPackageDeps.props"
+        assert found, "no import node found that imports Vs2017Project.NmPackageDeps.props"
 
         # THEN the verify that the *.vcxproj file has an xml element Project/ItemGroup/Text as follows
         #       <ItemGroup>
         #         <Text Include="Vs2017Project.NmPackageDeps.props" />
         #       </ItemGroup>
-        projTree = ET.parse(Path("Vs2017Project.vcxproj"))
-        root = projTree.getroot()
-        ns = {'default': 'http://schemas.microsoft.com/developer/msbuild/2003'}
-
+        found = False
         for c in root.findall("default:ItemGroup/default:Text", ns):
             print(c.tag, c.attrib)
             if ('Include' in c.attrib 
                 and c.attrib['Include'] == 'Vs2017Project.NmPackageDeps.props'):
                 # node found :-)              
-                return 
+                found = True
     
-        assert False, "Vs2017Project.NmPackageDeps.props include is missing from *.vcxproj file"
+        assert found, "Vs2017Project.NmPackageDeps.props include is missing from *.vcxproj file"
 
     def test_regressionTest(self, tmpdir):
         """
