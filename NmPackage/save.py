@@ -1,7 +1,29 @@
+from pathlib import Path, PureWindowsPath
 from xml.dom import minidom
+
 from NmPackage import *
-from pathlib import Path
-from pathlib import PureWindowsPath
+
+
+class VsProjectFiler(object):
+    """
+    (De)Serializing a `VsProject` from and to disk.
+
+    It consists of two files:
+      * <projectName>.vcxproj (e.g. `VcxProjectFileFormat`)
+      * <projectName>.NmPackageDeps.props (e.g. `NmPackageDepsFileFormat`)
+
+    """
+
+    def serialize(self, vsProject: VsProject):
+        # ensure the <projectName>.NmPacakgeDeps.props is imported in the *.vcxproj file
+        vcx_project_file = VcxProjectFile(vsProject.project_filepath)
+        vcx_project_file.integrate_nmpkg()
+
+        # write the dependecies to disk
+        propsfile = vsProject.project_filepath.with_name(
+            vsProject.projectName + ".NmPackageDeps.props")
+        with Path(propsfile).open("tw+") as f:
+            f.write(NmPackageDepsFileFormat.serialize(vsProject.dependencies))
 
 
 def Integrate(path: Path):
@@ -12,7 +34,7 @@ def Integrate(path: Path):
     """
     vcxproj_filepath = find_vcxproj(Path(path))
 
-    integrate_vsproject(VsProject(vcxproj_filepath))
+    VsProjectFiler().serialize(VsProject(vcxproj_filepath))
 
 
 def find_vcxproj(path: Path)->Path:
@@ -48,65 +70,94 @@ def find_vcxproj(path: Path)->Path:
     raise Exception(msg)
 
 
-def integrate_vsproject(vsProject: VsProject):
-    """
-    Integrate '<projectName>.NmPackageDeps.props' into an `VsProject`
+class VcxProjectFile(object):
+    """Class representing an actual *.vcxproj file"""
 
-    create <projectName>.NmPackageDeps.props
-    integrate into *.vcxproj file
+    @property
+    def path(self) -> Path:
+        return self._path
 
-    fail if  <projectName>.NmPackageDeps.props already exists
-    """
-    assert(Path(vsProject.project_filepath).exists())
+    def __init__(self, vcxproject_file_path: Path):
+        """
+        Create object given the path to an *.vcxproj file
+        """
+        self._path = Path(vcxproject_file_path)
 
-    packageDir = Path(__file__).parent
+        if not self.path.is_file():
+            raise Exception("not a file: " + str(self.path))
 
-    # generate empty '<projectName>.NmPackageDeps.props' file
-    target_file_path = vsProject.project_filepath.parent / \
-        Path(vsProject.projectName + ".NmPackageDeps.props")
-    if Path(target_file_path).exists():
-        raise Exception(
-            "Intergration failure. The following file already exists:\n    " + str(target_file_path))
+        if not self.path.match("*.vcxproj"):
+            raise Exception("not a vcxfile: " + str(self.path))
 
-    with open(target_file_path, 'wt') as f:
-        f.write(NmPackageDepsFileFormat.serialize())
+    def integrate_nmpkg(self):
+        """
+        Integrate '<projectName>.NmPackageDeps.props' into this *.vcxproj file
+        """
+        assert(self.path.exists())
+        assert(self.path.match("*.vcxproj"))
 
-    # read the project xml file
-    with Path(vsProject.project_filepath).open("rt") as f:
-        projDom = minidom.parse(f)
+        # read the project xml file
+        with self.path.open("rt") as f:
+            projDom = minidom.parse(f)
 
-    # integrate the XXX.NmPackageDeps.props file into the project
-    # i.e. add
-    #       <Import Project="XXX.NmPackageDeps.props" />
-    # to the project file
-    import_node = projDom.documentElement.appendChild(
-        projDom.createElement("Import"))
-    import_node.setAttribute("Project", target_file_path.name)
+        # add property file to project
+        self._import_NmPackageDeps(projDom)
+        self._include_NmPackgeDeps(projDom)
 
-    # include the XXX.NmPackageDeps.props in the project file
-    # i.e. add
-    #       <ItemGroup>
-    #         <Text Include="XXX.NmPackageDeps.props" />
-    #       </ItemGroup>
-    # to the project file
-    group_node = projDom.documentElement.appendChild(
-        projDom.createElement("ItemGroup"))
-    text_node = group_node.appendChild(projDom.createElement("Text"))
-    text_node.setAttribute("Include", target_file_path.name)
+        # write the updated project xml config to file
+        sanitize_text_nodes(projDom.documentElement)
+        with Path(self.path).open('tw') as f:
+            dom_str = projDom.toprettyxml(
+                indent="  ", encoding="utf-8").decode()
+            for line in dom_str.splitlines():
+                # space before closing node tag
+                #  NOK: <name attr="value"/>
+                #  OK : <name attr="value" />
+                # this appears to be the visual studio way
+                line = line.replace('"/>', '" />')
 
-    sanitize_text_nodes(projDom.documentElement)
+                f.write(line + "\n")
 
-    # write the updated project xml config to file
-    with Path(vsProject.project_filepath).open('tw') as f:
-        dom_str = projDom.toprettyxml(indent="  ", encoding="utf-8").decode()
-        for line in dom_str.splitlines():
-            # space before closing node tag
-            #  NOK: <name attr="value"/>
-            #  OK : <name attr="value" />
-            # this appears to be the visual studio way
-            line = line.replace('"/>', '" />')
+    def _import_NmPackageDeps(self, projDom):
+        """
+        integrate the XXX.NmPackageDeps.props file into the project
+        i.e. add
+              <Import Project="XXX.NmPackageDeps.props" />
+        to the project file
+        """
+        # check if the file is not already imported
+        file_path = self.path.stem + ".NmPackageDeps.props"
+        for e in projDom.getElementsByTagName("Import"):
+            if e.getAttribute("Project") == file_path:
+                # already imported, nothign to do!
+                return
 
-            f.write(line + "\n")
+        # not yet imported add import element
+        import_node = projDom.documentElement.appendChild(
+            projDom.createElement("Import"))
+        import_node.setAttribute("Project", file_path)
+
+    def _include_NmPackgeDeps(self, projDom: minidom.Document):
+        """
+        include the XXX.NmPackageDeps.props in the project file
+        i.e. add
+              <ItemGroup>
+                <Text Include="XXX.NmPackageDeps.props" />
+              </ItemGroup>
+        to the project file
+        """
+        # check if the file is already included
+        file_path = self.path.stem + ".NmPackageDeps.props"
+        for e in projDom.getElementsByTagName("Text"):
+            if e.getAttribute("Include") == file_path \
+               and e.parentNode.tagName == "ItemGroup":
+                # already imported, nothing to do!
+                return
+
+        group_node = projDom.documentElement.appendChild(
+            projDom.createElement("ItemGroup"))
+        text_node = group_node.appendChild(projDom.createElement("Text"))
+        text_node.setAttribute("Include", file_path)
 
 
 def sanitize_text_nodes(xml_element: minidom.Element):
@@ -281,7 +332,8 @@ the condition is needed to allow the project to be loaded if the package is not 
         # sort packages alphabetically
         # this will make it eaiser for humans to find a package
         # it also ensures that if a non-empty VCS diff is an actual change and not just a reordering
-        sorted_packages = sorted(packages, key=lambda nmPackageId: nmPackageId.qualifiedId)
+        sorted_packages = sorted(
+            packages, key=lambda nmPackageId: nmPackageId.qualifiedId)
 
         # add Import nodes to dom
         for p in sorted_packages:

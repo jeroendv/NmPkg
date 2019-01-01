@@ -34,7 +34,7 @@ class Test_Integrate:
             "before integration there should not be a 'Vs2017Project.NmPackageDeps.props'"
 
         # WHEN Integrating into said project
-        integrate_vsproject(VsProject(Path("Vs2017Project.vcxproj")))
+        VsProjectFiler().serialize(VsProject(Path("Vs2017Project.vcxproj")))
 
         # THEN
         assert Path("Vs2017Project.NmPackageDeps.props").is_file(), \
@@ -48,7 +48,7 @@ class Test_Integrate:
         os.chdir(p)
 
         # WHEN Integrating into the project folder
-        integrate_vsproject(VsProject(Path("Vs2017Project.vcxproj")))
+        VsProjectFiler().serialize(VsProject(Path("Vs2017Project.vcxproj")))
 
         # THEN the verify that the *.vcxproj file has an xml element Project/Import as follows
         #       <Import Project="Vs2017Project.NmPackageDeps.props" />
@@ -93,7 +93,7 @@ class Test_Integrate:
         os.chdir(p)
 
         # WHEN Integrating into the project dir
-        integrate_vsproject(VsProject(Path("Vs2017Project.vcxproj")))
+        VsProjectFiler().serialize(VsProject(Path("Vs2017Project.vcxproj")))
 
         # THEN the resulting dir should match the baseline
         compare_dirs(self.testFilesVerified, Path(tmpdir))
