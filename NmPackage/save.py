@@ -118,8 +118,8 @@ class VcxProjectFile(object):
         assert(self.path.match("*.vcxproj"))
 
         # read the project xml file
-        with self.path.open("rt") as f:
-            projDom = minidom.parse(f)
+        DebugLog.print("reading file: " + str(self.path))
+        projDom = minidom.parse(str(self.path))
 
         # add property file to project
         self._import_NmPackageDeps(projDom)
