@@ -121,11 +121,18 @@ class VcxProjectFile(object):
         DebugLog.print("reading file: " + str(self.path))
         projDom = minidom.parse(str(self.path))
 
+        # keep track of dom modifications
+        self._domChanged = False
+
         # add property file to project
         self._import_NmPackageDeps(projDom)
         self._include_NmPackgeDeps(projDom)
 
         # write the updated project xml config to file
+        if not self._domChanged:
+            del(self._domChanged)
+            return
+
         sanitize_text_nodes(projDom.documentElement)
         with Path(self.path).open('tw') as f:
             dom_str = projDom.toprettyxml(
@@ -138,6 +145,8 @@ class VcxProjectFile(object):
                 line = line.replace('"/>', '" />')
 
                 f.write(line + "\n")
+
+        del(self._domChanged)
 
     def _import_NmPackageDeps(self, projDom):
         """
@@ -156,6 +165,8 @@ class VcxProjectFile(object):
         import_node = projDom.documentElement.appendChild(
             projDom.createElement("Import"))
         import_node.setAttribute("Project", self.nmPackageDeps_path.name)
+
+        self._domChanged = True
 
     def _include_NmPackgeDeps(self, projDom: minidom.Document):
         """
@@ -177,6 +188,8 @@ class VcxProjectFile(object):
             projDom.createElement("ItemGroup"))
         text_node = group_node.appendChild(projDom.createElement("Text"))
         text_node.setAttribute("Include", self.nmPackageDeps_path.name)
+
+        self._domChanged = True
 
 
 def sanitize_text_nodes(xml_element: minidom.Element):
