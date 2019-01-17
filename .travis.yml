@@ -8,8 +8,8 @@ python:
 # command to install dependencies
 install:
   - pip list
-  - pip install -r requirements.txt
-  - pip install -r test_requirements.txt
+  - pip install -r requirements.txt -U
+  - pip install -r test_requirements.txt -U
   - pip list
 # command to run tests
 script:
