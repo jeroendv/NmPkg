@@ -15,6 +15,7 @@ And the NmPackage.save module to save a 'VsProject' to disk thus modifying
 """
 from pathlib import PurePath
 from NmPackage.debug import DebugLog
+from pathlib import Path
 
 
 class VsProject:
@@ -87,3 +88,93 @@ class NmPackageId(object):
 
     def __hash__(self):
         return hash(self.qualifiedId)
+
+
+class NmPackageManager(object):
+    """
+    Manage NmPackages on the local system: Install, update and remove packages.
+    
+    This class will perform disk IO to check files on disk and Network IO to fetch files from a server.
+    """
+    @staticmethod
+    def get_package_dir( nm_package_id: NmPackageId) -> Path:
+        """
+        return the path of the package in the system-wide package cache
+        """
+        return Path(self._nm_package_id.packageId) / Path(self.nm_package_id.versionId)
+
+    @property
+    def package_cache_dir(self) -> Path:
+        """absolute `Path` to the system-wide package cache root directory"""
+        return Path(os.environ['NmPackageDir'])
+
+    @staticmethod
+    def get_git_project_slug( nm_package_id: NmPackageId) -> str:
+        """
+        create a git project slug for this package from the qualified package id
+
+        A gitlab project slug has the following constraints:
+         * Path can contain only letters, digits, '_', '-' and '.'.
+         * Cannot start with '-'
+         * cannot end in '.git' or '.atom'
+        """
+        git_slug = nm_package_id.qualifiedId
+
+        # sanitize illegal chars
+        import re
+        git_slug = re.sub(r'[^a-zA-Z0-9_\-.]', '_', git_slug)
+
+        # sanitize illegal start char
+        git_slug = re.sub(r'^-', "_", git_slug)
+
+        # sanitize illegal ending
+        git_slug = re.sub(r'\.git$', "_git", git_slug)
+        git_slug = re.sub(r'\.atom$', "_atom", git_slug)
+
+        return git_slug
+
+    @staticmethod
+    def _get_git_repo_url( nm_package_id: NmPackageId) -> str:
+        """url to the git repo of this package."""
+
+        return "git@PC-CI-2.mtrs.intl:nmpackages/" + self._get_git_project_slug(nm_package_id)
+
+
+    @staticmethod
+    def is_installed( nm_package_id: NmPackageId) -> bool:
+        """
+        check if a package is locally installed on the system.
+
+        note that an installed package may be outdated!
+        """
+        return (self.package_cache_dir / self.package_cache_dir).is_dir()
+
+    @staticmethod
+    def is_outdated( nm_package_id: NmPackageId) -> bool:
+        """
+        check if a locally installed package is outdated.
+        i.e. an outdated package will incurr network IO when being installed because.
+
+        Note: non-installed packages are always considered outdated
+        """
+        pass
+
+    @staticmethod
+    def install( nm_package_id: NmPackageId):
+        """
+        install/update a package to the system wide package cache.
+
+        Installing may incur network and disk IO.
+
+        Throws in case of failure: e.g network disconnections, disk is full, etc
+        """
+        pass
+
+    @staticmethod
+    def uninstall( nm_package_id: NmPackageId):
+        """
+        Delete a package from the system wide package cache.
+
+        Uninstall will perform Disk IO to remove the files from disk.
+        """
+        pass
