@@ -94,11 +94,11 @@ class NmPackageId(object):
 class NmPackageManager(object):
     """
     Manage NmPackages on the local system: Install, update and remove packages.
-    
+
     This class will perform disk IO to check files on disk and Network IO to fetch files from a server.
     """
     @staticmethod
-    def get_package_dir( nm_package_id: NmPackageId) -> Path:
+    def get_package_dir(nm_package_id: NmPackageId) -> Path:
         """
         return the path of the package in the system-wide package cache
         """
@@ -110,7 +110,7 @@ class NmPackageManager(object):
         return Path(os.environ['NmPackageDir'])
 
     @staticmethod
-    def get_git_project_slug( nm_package_id: NmPackageId) -> str:
+    def get_git_project_slug(nm_package_id: NmPackageId) -> str:
         """
         create a git project slug for this package from the qualified package id
 
@@ -140,9 +140,8 @@ class NmPackageManager(object):
         slug = NmPackageManager.get_git_project_slug(nm_package_id)
         return "git@PC-CI-2.mtrs.intl:nmpackages/{}.git".format(slug)
 
-
     @staticmethod
-    def is_installed( nm_package_id: NmPackageId) -> bool:
+    def is_installed(nm_package_id: NmPackageId) -> bool:
         """
         check if a package is locally installed on the system.
 
@@ -151,7 +150,7 @@ class NmPackageManager(object):
         return (self.package_cache_dir / self.package_cache_dir).is_dir()
 
     @staticmethod
-    def is_outdated( nm_package_id: NmPackageId) -> bool:
+    def is_outdated(nm_package_id: NmPackageId) -> bool:
         """
         check if a locally installed package is outdated.
         i.e. an outdated package will incurr network IO when being installed because.
@@ -161,7 +160,7 @@ class NmPackageManager(object):
         pass
 
     @staticmethod
-    def install( nm_package_id: NmPackageId):
+    def install(nm_package_id: NmPackageId):
         """
         install/update a package to the system wide package cache.
 
@@ -172,7 +171,7 @@ class NmPackageManager(object):
         pass
 
     @staticmethod
-    def uninstall( nm_package_id: NmPackageId):
+    def uninstall(nm_package_id: NmPackageId):
         """
         Delete a package from the system wide package cache.
 
