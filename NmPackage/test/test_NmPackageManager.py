@@ -53,10 +53,6 @@ def test_get_package_dir():
     path = NmPackageManager.get_package_dir(p)
     assert Path("myPackage") / (Path("1.0.0")) == path
 
-    # the pathlib.Path should take care of the dir separators
-    assert Path("myPackage/1.0.0") == path
-    assert Path("myPackage\\1.0.0") == path
-
 
 class Test_NmPackageManager:
 
