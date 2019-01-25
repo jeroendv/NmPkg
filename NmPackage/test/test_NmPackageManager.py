@@ -1,5 +1,6 @@
 from NmPackage import NmPackageManager
 from NmPackage import NmPackageId
+from pathlib import Path
 
 
 
@@ -43,3 +44,16 @@ def test_get_git_repo_url():
     # THEN check the git repo url for that package
     url = NmPackageManager.get_git_repo_url(p)
     assert "git@PC-CI-2.mtrs.intl:nmpackages/p_1.0.0.git" ==  url
+
+def test_get_package_dir():
+    # GIVEN a package 
+    p = NmPackageId("myPackage", "1.0.0")
+
+    # THEN the package directory is constructed from the
+    # packageId and the versionId
+    path = NmPackageManager.get_package_dir(p)
+    assert Path("myPackage") / (Path("1.0.0")) == path
+
+    # the pathlib.Path should take care of the dir separators
+    assert Path("myPackage/1.0.0") == path
+    assert Path("myPackage\\1.0.0") == path

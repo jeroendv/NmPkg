@@ -102,7 +102,7 @@ class NmPackageManager(object):
         """
         return the path of the package in the system-wide package cache
         """
-        return Path(self._nm_package_id.packageId) / Path(self.nm_package_id.versionId)
+        return Path(nm_package_id.packageId) / Path(nm_package_id.versionId)
 
     @property
     def package_cache_dir(self) -> Path:
