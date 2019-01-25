@@ -16,6 +16,7 @@ And the NmPackage.save module to save a 'VsProject' to disk thus modifying
 from pathlib import PurePath
 from NmPackage.debug import DebugLog
 from pathlib import Path
+import os
 
 
 class VsProject:
