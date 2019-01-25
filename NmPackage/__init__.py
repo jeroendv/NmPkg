@@ -107,7 +107,23 @@ class NmPackageManager(object):
     @property
     def package_cache_dir(self) -> Path:
         """absolute `Path` to the system-wide package cache root directory"""
-        return Path(os.environ['NmPackageDir'])
+        return self._package_cache_dir
+
+    def __init__(self, package_cache_dir: Path):
+        self._package_cache_dir = package_cache_dir
+
+    @staticmethod
+    def get_system_manager():
+        """
+        Return the NmPackageManager to manage in the system-wide cache of the local machine.
+        """
+        system_wide_package_cache = Path(os.environ['NmPackageDir'])
+
+        if not system_wide_package_cache.is_dir():
+            raise Exception(
+                "The system-wide package cache dir does not exists.")
+
+        return NmPackageManager(system_wide_package_cache)
 
     @staticmethod
     def get_git_project_slug(nm_package_id: NmPackageId) -> str:
@@ -140,8 +156,7 @@ class NmPackageManager(object):
         slug = NmPackageManager.get_git_project_slug(nm_package_id)
         return "git@PC-CI-2.mtrs.intl:nmpackages/{}.git".format(slug)
 
-    @staticmethod
-    def is_installed(nm_package_id: NmPackageId) -> bool:
+    def is_installed(self, nm_package_id: NmPackageId) -> bool:
         """
         check if a package is locally installed on the system.
 
@@ -149,8 +164,7 @@ class NmPackageManager(object):
         """
         return (self.package_cache_dir / self.package_cache_dir).is_dir()
 
-    @staticmethod
-    def is_outdated(nm_package_id: NmPackageId) -> bool:
+    def is_outdated(self, nm_package_id: NmPackageId) -> bool:
         """
         check if a locally installed package is outdated.
         i.e. an outdated package will incurr network IO when being installed because.
@@ -159,8 +173,7 @@ class NmPackageManager(object):
         """
         pass
 
-    @staticmethod
-    def install(nm_package_id: NmPackageId):
+    def install(self, nm_package_id: NmPackageId):
         """
         install/update a package to the system wide package cache.
 
@@ -170,11 +183,16 @@ class NmPackageManager(object):
         """
         pass
 
-    @staticmethod
-    def uninstall(nm_package_id: NmPackageId):
+    def uninstall(self, nm_package_id: NmPackageId):
         """
         Delete a package from the system wide package cache.
 
         Uninstall will perform Disk IO to remove the files from disk.
+        """
+        pass
+
+    def get_installed_packages(self) -> set:
+        """
+        Return a set of NmPackageId's that are installed in the system-wide package cache
         """
         pass
