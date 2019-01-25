@@ -7,11 +7,11 @@ from pathlib import Path
 def assert_git_project_slug(expected_git_slug: str, nm_package_id: NmPackageId):
     """assert the git projec slug of an NmPackageId"""
     # GIVEN an NmPackageId
-    
+
     # WHEN building the git repo slug for that package
     slug = NmPackageManager.get_git_project_slug(nm_package_id)
-    
-    # THEN the slug should match the expected value 
+
+    # THEN the slug should match the expected value
     assert expected_git_slug == slug
 
 
@@ -28,7 +28,6 @@ def test_git_project_slugs_generation():
     assert_git_project_slug("_package_1", NmPackageId("-package", "1"))
     assert_git_project_slug("_-package_1", NmPackageId("--package", "1"))
 
-
     # project slugs can't end with '.git' or '.atom'
     assert_git_project_slug("package_1_git", NmPackageId("package", "1.git"))
     assert_git_project_slug("package_2_atom", NmPackageId("package", "2.atom"))
@@ -43,10 +42,11 @@ def test_get_git_repo_url():
 
     # THEN check the git repo url for that package
     url = NmPackageManager.get_git_repo_url(p)
-    assert "git@PC-CI-2.mtrs.intl:nmpackages/p_1.0.0.git" ==  url
+    assert "git@PC-CI-2.mtrs.intl:nmpackages/p_1.0.0.git" == url
+
 
 def test_get_package_dir():
-    # GIVEN a package 
+    # GIVEN a package
     p = NmPackageId("myPackage", "1.0.0")
 
     # THEN the package directory is constructed from the
@@ -57,3 +57,35 @@ def test_get_package_dir():
     # the pathlib.Path should take care of the dir separators
     assert Path("myPackage/1.0.0") == path
     assert Path("myPackage\\1.0.0") == path
+
+
+class Test_NmPackageManager:
+
+    package_cache_dir_fixture = \
+        (Path(__file__).parent /
+         Path("TestFiles/NmPackageManager/PackageCacheWithSomePackages")).absolute()
+
+    package1_100 = NmPackageId("package1", "v1.0.0")
+    package1_101 = NmPackageId("package1", "v1.0.1")
+    package2_100 = NmPackageId("package2", "v1.0.0")
+
+    def setUp(self, tmpdir):
+        """Copy `testFilesPre` to the test dir `tmpdir`"""
+        print(str(tmpdir))
+        assert self.package_cache_dir_fixture.is_dir()
+        from distutils.dir_util import copy_tree
+        copy_tree(self.package_cache_dir_fixture, str(tmpdir))
+
+    def test_get_installed_packages(self, tmpdir):
+        # GIVEN a package cache with some pre-installed packages
+        self.setUp(tmpdir)
+        mgr = NmPackageManager(Path(str(tmpdir)))
+
+        # WHEN getting all packages
+        packages = mgr.get_installed_packages()
+
+        # THEN there are 3 installed packages
+        assert 3 == len(packages)
+        assert self.package1_100 in packages
+        assert self.package1_101 in packages
+        assert self.package2_100 in packages
