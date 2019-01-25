@@ -36,7 +36,10 @@ def test_git_project_slugs_generation():
     assert_git_project_slug("package_3.jdv", NmPackageId("package", "3.jdv"))
 
 
+def test_get_git_repo_url():
+    # GIVEN an NmPackageId
+    p = NmPackageId("p", "1.0.0")
 
-
-
-    
+    # THEN check the git repo url for that package
+    url = NmPackageManager.get_git_repo_url(p)
+    assert "git@PC-CI-2.mtrs.intl:nmpackages/p_1.0.0.git" ==  url

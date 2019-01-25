@@ -135,10 +135,10 @@ class NmPackageManager(object):
         return git_slug
 
     @staticmethod
-    def _get_git_repo_url( nm_package_id: NmPackageId) -> str:
-        """url to the git repo of this package."""
-
-        return "git@PC-CI-2.mtrs.intl:nmpackages/" + self._get_git_project_slug(nm_package_id)
+    def get_git_repo_url(nm_package_id: NmPackageId) -> str:
+        """url to the git repo of a package."""
+        slug = NmPackageManager.get_git_project_slug(nm_package_id)
+        return "git@PC-CI-2.mtrs.intl:nmpackages/{}.git".format(slug)
 
 
     @staticmethod
