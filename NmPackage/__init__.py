@@ -17,6 +17,7 @@ from pathlib import PurePath
 from NmPackage.debug import DebugLog
 from pathlib import Path
 import os
+import shutil
 
 
 class VsProject:
@@ -162,7 +163,7 @@ class NmPackageManager(object):
 
         note that an installed package may be outdated!
         """
-        return (self.package_cache_dir / self.package_cache_dir).is_dir()
+        return (self.package_cache_dir / NmPackageManager.get_package_dir(nm_package_id)).is_dir()
 
     def is_outdated(self, nm_package_id: NmPackageId) -> bool:
         """
@@ -189,7 +190,36 @@ class NmPackageManager(object):
 
         Uninstall will perform Disk IO to remove the files from disk.
         """
-        pass
+        if not self.is_installed(nm_package_id):
+            # Nothing to do: the package is not installed
+            return
+
+        def onerror(func, path, exc_info):
+            """
+            Error handler for ``shutil.rmtree``.
+
+            If the error is due to an access error (read only file)
+            it attempts to add write permission and then retries.
+
+            If the error is for another reason it re-raises the error.
+
+            Usage : ``shutil.rmtree(path, onerror=onerror)``
+            """
+            import stat
+            if not os.access(path, os.W_OK):
+                # Is the error an access error ?
+                os.chmod(path, stat.S_IWUSR)
+                func(path)
+            else:
+                raise
+
+        absolute_package_path = self.package_cache_dir / self.get_package_dir(nm_package_id)  
+        shutil.rmtree(absolute_package_path, onerror=onerror)
+
+        if 0 == len(list(absolute_package_path.parent.iterdir())):
+            # the last version of the package is removed, 
+            # remove the package folder as well
+            absolute_package_path.parent.rmdir()
 
     def get_installed_packages(self) -> set:
         """

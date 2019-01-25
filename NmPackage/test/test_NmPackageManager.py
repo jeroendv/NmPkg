@@ -3,7 +3,6 @@ from NmPackage import NmPackageId
 from pathlib import Path
 
 
-
 def assert_git_project_slug(expected_git_slug: str, nm_package_id: NmPackageId):
     """assert the git projec slug of an NmPackageId"""
     # GIVEN an NmPackageId
@@ -89,3 +88,72 @@ class Test_NmPackageManager:
         assert self.package1_100 in packages
         assert self.package1_101 in packages
         assert self.package2_100 in packages
+
+    def test_is_installed(self, tmpdir):
+        # GIVEN a package cache with some pre-installed packages
+        self.setUp(tmpdir)
+        mgr = NmPackageManager(Path(str(tmpdir)))
+
+        # THEN  the following packages should already be installed
+        assert mgr.is_installed(self.package1_100)
+        assert mgr.is_installed(self.package1_101)
+        assert mgr.is_installed(self.package2_100)
+
+    def test_uninstall(self, tmpdir):
+        # GIVEN a package cache with some pre-installed packages
+        self.setUp(tmpdir)
+        mgr = NmPackageManager(Path(str(tmpdir)))
+
+        # THEN  the following packages should already be installed
+        assert mgr.is_installed(self.package1_100)
+        assert mgr.is_installed(self.package1_101)
+        assert mgr.is_installed(self.package2_100)
+
+        # WHEN uninstalling a package
+        mgr.uninstall(self.package2_100)
+
+        # THEN the package is no longer present
+        assert 2 == len(list(mgr.get_installed_packages()))
+        assert not mgr.is_installed(self.package2_100)
+        assert mgr.is_installed(self.package1_100)
+        assert mgr.is_installed(self.package1_101)
+
+        # WHEN uninstalling a second package
+        mgr.uninstall(self.package1_101)
+
+        # THEN the package is no longer present
+        assert 1 == len(list(mgr.get_installed_packages()))
+        assert not mgr.is_installed(self.package2_100)
+        assert mgr.is_installed(self.package1_100)
+        assert not mgr.is_installed(self.package1_101)
+
+        # WHEN uninstalling a third and last package
+        mgr.uninstall(self.package1_100)
+
+        # THEN the list of installed packages is empty
+        assert 0 == len(list(mgr.get_installed_packages()))
+        assert not mgr.is_installed(self.package2_100)
+        assert not mgr.is_installed(self.package1_100)
+        assert not mgr.is_installed(self.package1_101)
+
+        # THEN the package cache dir is empty
+        assert 0 == len(list(mgr.package_cache_dir.iterdir()))
+
+    def test_uninstall_non_existing_package(self, tmpdir):
+        # GIVEN a package cache with some pre-installed packages
+        self.setUp(tmpdir)
+        mgr = NmPackageManager(Path(str(tmpdir)))
+        assert 3 == len(list(mgr.get_installed_packages()))
+
+        # GIVEN a non-installed package
+        p = NmPackageId("non-installed_package", "1.0.0")
+        assert not mgr.is_installed(p)
+
+        # WHEN uninstalling said package
+        mgr.uninstall(p)
+
+        # THEN this a noop (i.e. it does not raise expections )
+        # and all the originall installed packages are unaffected
+        assert 3 == len(list(mgr.get_installed_packages()))
+        
+
