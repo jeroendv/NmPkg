@@ -10,7 +10,7 @@ import os
 def parse_cli_args():
     """parse the script input arguments"""
     parser = argparse.ArgumentParser(
-        description="install a new packge")
+        description="install a new package")
 
     parser.add_argument("-v", "--verbose",
                         help="increase output verbosity",
