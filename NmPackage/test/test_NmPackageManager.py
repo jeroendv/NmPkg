@@ -168,7 +168,16 @@ def test_create_NmPackageManger_from_env():
 
 def test_install_package(tmpdir):
     os.chdir(tmpdir)
-    mgr = NmPackageManager("tmpdir")
+    mgr = NmPackageManager(Path(tmpdir))
     mgr.install(NmPackageId("zlib", "zlib-1.2.8"))
+
+
+def test_upgrade_package(tmpdir):
+    os.chdir(tmpdir)
+    mgr = NmPackageManager(Path(tmpdir))
+    
+    mgr.install(NmPackageId("zlib", "zlib-1.2.8"))
+    mgr.install(NmPackageId("zlib", "zlib-1.2.8"))
+
 
 
