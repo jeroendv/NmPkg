@@ -193,28 +193,8 @@ class NmPackageManager(object):
         if not self.is_installed(nm_package_id):
             # Nothing to do: the package is not installed
             return
-
-        def onerror(func, path, exc_info):
-            """
-            Error handler for ``shutil.rmtree``.
-
-            If the error is due to an access error (read only file)
-            it attempts to add write permission and then retries.
-
-            If the error is for another reason it re-raises the error.
-
-            Usage : ``shutil.rmtree(path, onerror=onerror)``
-            """
-            import stat
-            if not os.access(path, os.W_OK):
-                # Is the error an access error ?
-                os.chmod(path, stat.S_IWUSR)
-                func(path)
-            else:
-                raise
-
         absolute_package_path = self.package_cache_dir / self.get_package_dir(nm_package_id)  
-        shutil.rmtree(absolute_package_path, onerror=onerror)
+        delete_tree(absolute_package_path)
 
         if 0 == len(list(absolute_package_path.parent.iterdir())):
             # the last version of the package is removed, 
@@ -241,3 +221,39 @@ class NmPackageManager(object):
             packages.add(NmPackageId(path_parts[0], path_parts[1]))
 
         return packages
+
+
+def delete_tree(path: Path):
+    """
+    Recursively delete a whole directory tree.
+
+    Note that this method will even delete read-only files provided that the user has the rights.
+    """
+    if not path.exists():
+        return
+
+    if not path.is_dir():
+        raise Exception("input `path` must be a directory.")
+
+    def onerror(func, path, exc_info):
+        """
+        Error handler for ``shutil.rmtree``.
+
+        If the error is due to an access error (read only file)
+        it attempts to add write permission and then retries.
+
+        If the error is for another reason it re-raises the error.
+
+        Usage : ``shutil.rmtree(path, onerror=onerror)``
+        """
+        import stat
+        if not os.access(path, os.W_OK):
+            # Is the error an access error ?
+            os.chmod(path, stat.S_IWUSR)
+            func(path)
+        else:
+            raise
+
+    import shutil
+    shutil.rmtree(path, onerror=onerror)
+
