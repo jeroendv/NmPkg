@@ -68,16 +68,7 @@ def main():
         for p in packages:
             DebugLog.print(p.qualifiedId)
 
-    # install each packages
+    # install all of the packages
+    mgr = NmPackageManager.get_system_manager()
     for p in packages:
-        install_package(p.qualifiedId)
-
-
-def install_package(nmPackageId: NmPackageId):
-    """
-    download and install an NmPackage to the system-wide package dir
-    """
-
-    NmPackageDir = Path(os.environ['NmPackageDir'])
-    DebugLog.print(NmPackageDir)
-
+        mgr.install(p)
