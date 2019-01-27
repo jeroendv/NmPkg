@@ -204,7 +204,7 @@ class NmPackageManager(object):
         original_cwd = Path.cwd()
         try:
             os.chdir(absolute_path)
-            subprocess.check_call(["git", "clone", self.get_git_repo_url(nm_package_id)])
+            subprocess.check_call(["git", "clone", self.get_git_repo_url(nm_package_id), "."])
         finally:
             os.chdir(original_cwd)
 
