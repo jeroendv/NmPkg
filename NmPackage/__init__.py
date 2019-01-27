@@ -19,6 +19,8 @@ from pathlib import Path
 import os
 import shutil
 
+import subprocess
+
 
 class VsProject:
     """
@@ -182,7 +184,46 @@ class NmPackageManager(object):
 
         Throws in case of failure: e.g network disconnections, disk is full, etc
         """
-        pass
+        if self.is_installed(nm_package_id):
+            self._upgrade_package(nm_package_id)
+        else:
+            self._install_package(nm_package_id)
+
+    def _install_package(self, nm_package_id: NmPackageId):
+        """
+        install a package, i.e. perform git clone
+        """
+
+        absolute_path = self.package_cache_dir / self.get_package_dir(nm_package_id)
+        assert not absolute_path.exists()
+
+        # create the package directory
+        absolute_path.mkdir(parents=True)
+
+        # TODO add verbose logging
+        original_cwd = Path.cwd()
+        try:
+            os.chdir(absolute_path)
+            subprocess.check_call(["git", "clone", self.get_git_repo_url(nm_package_id)])
+        finally:
+            os.chdir(original_cwd)
+
+    def _upgrade_package(self, nm_package_id: NmPackageId):
+        """
+        upgrade an existing package, i.e. perform git pull
+        """
+        # TODO what is repo is not clean?
+        absolute_path = self.package_cache_dir / self.get_package_dir(nm_package_id)
+        assert absolute_path.is_dir()
+
+
+        # TODO add verbose logging
+        original_cwd = Path.cwd()
+        try:
+            os.chdir(absolute_path)
+            subprocess.check_call(["git", "pull"])
+        finally:
+            os.chdir(original_cwd)
 
     def uninstall(self, nm_package_id: NmPackageId):
         """

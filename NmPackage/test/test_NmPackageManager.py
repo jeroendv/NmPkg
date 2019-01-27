@@ -165,3 +165,10 @@ def test_create_NmPackageManger_from_env():
     # THEN the package cache root dir matches the env. variables
     assert Path.cwd() == mgr.package_cache_dir
 
+
+def test_install_package(tmpdir):
+    os.chdir(tmpdir)
+    mgr = NmPackageManager("tmpdir")
+    mgr.install(NmPackageId("zlib", "zlib-1.2.8"))
+
+
