@@ -205,19 +205,23 @@ class NmPackageManager(object):
         """
         Return a set of NmPackageId's that are installed in the system-wide package cache
         """
+        # the packege cache has fixes structure
+        #    <packageId>/<versionId>
+        # lets find all directories in the system-wide package cache that m
         all_package_folders = self.package_cache_dir.glob("*/*")
         packages = set()
         for p in all_package_folders:
             if not p.is_dir():
                 # skip files
-                # e.g. the package folder may contain some readme files
+                # e.g. the system-wide packge cache folder, or the packageId folder may contain some readme files
                 continue
 
-            # every a/b dir represents an NmPackageId("a", "b")
+            # plit the relative path in its two parts <packageId> & <versionId>
             rel_path = p.relative_to(self.package_cache_dir)
-
             path_parts = rel_path.parts
             assert 2 == len(path_parts)
+
+            # aggregate
             packages.add(NmPackageId(path_parts[0], path_parts[1]))
 
         return packages
