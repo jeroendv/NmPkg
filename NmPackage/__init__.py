@@ -221,7 +221,7 @@ class NmPackageManager(object):
         original_cwd = Path.cwd()
         try:
             os.chdir(absolute_path)
-            subprocess.check_call(["git", "pull"])
+            subprocess.check_call(["git", "pull", "origin", "master"])
         finally:
             os.chdir(original_cwd)
 
