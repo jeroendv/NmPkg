@@ -33,6 +33,9 @@ def parse_cli_args():
 
     args = parser.parse_args()
 
+    # set debug log state
+    DebugLog.enabled = args.debug
+
     with DebugLogScopedPush("cli arguments:"):
         DebugLog.print(str(args))
 
@@ -45,9 +48,6 @@ def main():
 
     # parse cli input
     args = parse_cli_args()
-
-    # set debug log state
-    DebugLog.enabled = args.debug
 
     # collect all packages to be installed
     packages = set()
