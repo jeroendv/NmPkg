@@ -1,6 +1,8 @@
 from NmPackage import NmPackageManager
 from NmPackage import NmPackageId
 from pathlib import Path
+import os
+
 
 
 def assert_git_project_slug(expected_git_slug: str, nm_package_id: NmPackageId):
@@ -151,5 +153,15 @@ class Test_NmPackageManager:
         # THEN this a noop (i.e. it does not raise expections )
         # and all the originall installed packages are unaffected
         assert 3 == len(list(mgr.get_installed_packages()))
-        
+
+
+def test_create_NmPackageManger_from_env():
+    # GIVEN a properly configured env.
+    os.environ["NmPackageDir"] = str(Path.cwd())
+
+    # WHEN getting the system-wide package manager
+    mgr = NmPackageManager.get_system_manager()
+
+    # THEN the package cache root dir matches the env. variables
+    assert Path.cwd() == mgr.package_cache_dir
 
