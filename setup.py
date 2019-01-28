@@ -10,7 +10,10 @@ setup(name='NmPackage',
       packages=['NmPackage'],
       entry_points = {
         'console_scripts': [
-            'NmPkg-add=NmPackage.cli.AddPackage:main'],
+            'NmPkg-add=NmPackage.cli.AddPackage:main',
+            'NmPkg-install=NmPackage.cli.install:main',
+            'NmPkg-list=NmPackage.cli.list:main',
+            'NmPkg-uninstall=NmPackage.cli.uninstall:main'],
         },
       include_package_data=True,
       zip_safe=False)
