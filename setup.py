@@ -7,7 +7,7 @@ setup(name='NmPackage',
       author='Jeroen_de_vlieger',
       author_email='jeroen.devlieger@nikon.com',
       license='',
-      packages=['NmPackage'],
+      packages=['NmPackage', 'NmPackage.cli'],
       entry_points = {
         'console_scripts': [
             'NmPkg-add=NmPackage.cli.AddPackage:main',
